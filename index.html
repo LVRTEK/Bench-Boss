@@ -49,11 +49,130 @@
     font-size: 28px;
     margin: 0;
   }
+  .app-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .app-header-title { flex: 1; }
   .app-header .tagline {
     color: var(--text-muted);
     font-size: 13px;
     margin: 4px 0 22px;
     line-height: 1.5;
+  }
+  .settings-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 4px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .settings-btn:active { color: var(--text); }
+
+  /* Settings panel */
+  .settings-panel {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    z-index: 100;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+  .settings-panel.show { transform: translateY(0); pointer-events: auto; }
+
+  .settings-header {
+    padding: 18px 20px 14px;
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .settings-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label { font-size: 15px; font-weight: 600; }
+  .settings-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 22px; height: 22px;
+    top: 3px; left: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
+
+  /* Minutes input */
+  .settings-minutes-input {
+    width: 64px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Roboto Mono', monospace;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-align: center;
+    outline: none;
+    flex-shrink: 0;
+  }
+  .settings-minutes-suffix {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: 6px;
+    white-space: nowrap;
   }
 
   /* Add player */
@@ -199,6 +318,7 @@
   }
 
   .card-list { display: flex; flex-direction: column; gap: 8px; position: relative; }
+  .drag-placeholder { border-radius: var(--radius); background: transparent; border: 2px dashed var(--border); flex-shrink: 0; }
 
   .next-indicator {
     display: flex;
@@ -343,24 +463,24 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: var(--text-muted);
     font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.08em;
     font-size: 11px;
+    color: var(--accent);
+    margin: 14px 0 6px;
     pointer-events: none;
   }
-  .court-divider::before, .court-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: repeating-linear-gradient(to right, var(--border) 0 6px, transparent 6px 12px);
-  }
-  #rosterDivider {
-    position: absolute;
-    left: 0; right: 0;
-    transform: translateY(-13px);
+  .court-divider::before, .court-divider::after { display: none; }
+  .court-divider span { color: var(--accent); }
+  .bench-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 14px 0 6px;
   }
 
   .hint { color: var(--text-muted); font-size: 12px; margin: 10px 4px 14px; line-height: 1.5; }
@@ -470,8 +590,16 @@
 <body>
   <div class="app">
     <header class="app-header">
-      <h1>Bench Boss</h1>
-      <p class="tagline" id="tagline">Build your team, then select who's playing and drag to set your starting five.</p>
+      <div class="app-header-title">
+        <h1>Bench Boss</h1>
+        <p class="tagline" id="tagline">Build your team, then select who's playing and drag to set your starting five.</p>
+      </div>
+      <button type="button" id="settingsBtn" class="settings-btn" title="Settings">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </header>
 
     <main>
@@ -490,9 +618,8 @@
         <p class="roster-count" id="rosterCount">0 / 10 playing today</p>
 
         <div class="list-label">Today's Lineup <span class="list-sub">— circle to sit out, hold name to edit, drag to reorder</span></div>
-        <div id="activeList" class="card-list">
-          <div id="rosterDivider" class="court-divider hidden"><span>Bench</span></div>
-        </div>
+        <div class="bench-section-label">Starting 5</div>
+        <div id="activeList" class="card-list"></div>
 
         <div class="list-label hidden" id="outOfRotationLabel">Out of Rotation <span class="list-sub">— hold name to return to rotation</span></div>
         <div id="outOfRotationList" class="card-list"></div>
@@ -539,7 +666,7 @@
         <div id="courtList" class="card-list"></div>
 
 
-        <div class="court-divider" style="margin: 22px 0 6px;"><span>Bench</span></div>
+        <div class="bench-section-label" style="margin: 22px 0 6px;">Bench</div>
         <p class="hint">Tap the circle to select players going in, then hit Substitute below. If the height groups don't match, you'll get a warning with the option to swap anyway. Hold a player's name to change their height or mark them out of rotation if they're injured. Drag to reorder manually any time.</p>
         <div id="benchList" class="card-list"></div>
 
@@ -559,6 +686,36 @@
   <div id="toast" class="toast"></div>
 
   <div id="menuBackdrop" class="menu-backdrop"></div>
+
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-header">
+      Settings
+      <button type="button" id="settingsClose" class="settings-close">&times;</button>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Fatigue Tracker</div>
+        <div class="settings-sub">Show energy bar on each player card</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="settingFatigueEnabled" checked />
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+
+    <div class="settings-row" id="settingFatigueTimeRow">
+      <div>
+        <div class="settings-label">Max Energy Time</div>
+        <div class="settings-sub">Minutes of play to reach full fatigue</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <input type="number" id="settingFatigueMinutes" class="settings-minutes-input" min="1" max="30" value="7" inputmode="numeric" />
+        <span class="settings-minutes-suffix">min</span>
+      </div>
+    </div>
+  </div>
+
   <div id="playerMenu" class="player-menu">
     <div class="player-menu-header" id="menuHeader"></div>
     <div id="playerMenuActions">
@@ -582,6 +739,40 @@
   <script>
     // ---------- State ----------
     const TEAM_STORAGE_KEY = 'benchBossTeam';
+    const SETTINGS_STORAGE_KEY = 'benchBossSettings';
+
+    // ---------- Settings ----------
+    let settings = {
+      fatigueEnabled: true,
+      fatigueMinutes: 7,
+    };
+
+    function saveSettings() {
+      try { localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.fatigueEnabled === 'boolean') settings.fatigueEnabled = parsed.fatigueEnabled;
+        if (typeof parsed.fatigueMinutes === 'number' && parsed.fatigueMinutes >= 1 && parsed.fatigueMinutes <= 30) {
+          settings.fatigueMinutes = parsed.fatigueMinutes;
+        }
+      } catch (e) {}
+    }
+
+    function getEnergyMaxMs() {
+      return settings.fatigueMinutes * 60 * 1000;
+    }
+
+    function applySettingsToUI() {
+      $('settingFatigueEnabled').checked = settings.fatigueEnabled;
+      $('settingFatigueMinutes').value = settings.fatigueMinutes;
+      $('settingFatigueTimeRow').style.opacity = settings.fatigueEnabled ? '1' : '0.4';
+      $('settingFatigueTimeRow').style.pointerEvents = settings.fatigueEnabled ? 'auto' : 'none';
+    }
     let team = [];           // { id, name, number, category: 'tall'|'short', active, outOfRotation } — persisted roster
     let players = [];      // { id, name, number, category: 'tall'|'short', outOfRotation, subCount } — this game's roster
     let onCourt = [];       // array of player ids, length 5
@@ -625,16 +816,15 @@
     }
 
     // ---------- Energy bar ----------
-    // Fills (green -> red) over 7 min of continuous on-court time while the
-    // clock runs, and drains back to empty over 7 min of rest (bench, or
+    // Fills (green -> red) over N min of continuous on-court time while the
+    // clock runs, and drains back to empty over N min of rest (bench, or
     // on-court while the clock is paused). Stored as a snapshot value +
     // anchor timestamp so it stays accurate even if the screen sleeps.
-    const ENERGY_MAX_MS = 7 * 60 * 1000;
 
     function getPlayerEnergyMs(p, now = Date.now()) {
       const elapsed = now - p.energyAnchorTime;
       const value = p.energyCharging ? p.energyMs + elapsed : p.energyMs - elapsed;
-      return Math.min(ENERGY_MAX_MS, Math.max(0, value));
+      return Math.min(getEnergyMaxMs(), Math.max(0, value));
     }
 
     // call whenever a player's charging/draining state changes (sub in/out, clock start/pause)
@@ -664,10 +854,15 @@
 
         const fillEl = card.querySelector('.energy-fill');
         if (fillEl) {
-          const pct = Math.round((getPlayerEnergyMs(p) / ENERGY_MAX_MS) * 100);
+          const bar = fillEl.closest('.energy-bar');
+          if (!settings.fatigueEnabled) {
+            if (bar) bar.style.display = 'none';
+            return;
+          }
+          if (bar) bar.style.display = '';
+          const pct = Math.round((getPlayerEnergyMs(p) / getEnergyMaxMs()) * 100);
           fillEl.style.height = pct + '%';
           fillEl.style.background = energyColor(pct);
-          const bar = fillEl.closest('.energy-bar');
           if (bar) bar.title = `Energy ${pct}%`;
         }
       });
@@ -773,6 +968,81 @@
     }
 
     // ---------- Generic drag-to-reorder ----------
+    // ---------- Setup list drag (DOM-lifting so bench label tracks live) ----------
+    // Uses onpointerdown (not addEventListener) so repeated renderSetup calls
+    // never stack up multiple listeners.
+    function enableSetupListDrag(listEl, onReorder) {
+      listEl.onpointerdown = (e) => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        const dragCard = handle.closest('.card');
+        if (!dragCard || dragCard.parentElement !== listEl) return;
+        e.preventDefault();
+
+        const cardRect = dragCard.getBoundingClientRect();
+        const cardW = listEl.offsetWidth;
+
+        // Leave a dashed placeholder where the card was
+        const placeholder = document.createElement('div');
+        placeholder.className = 'drag-placeholder';
+        placeholder.style.height = cardRect.height + 'px';
+        listEl.insertBefore(placeholder, dragCard);
+
+        // Lift the card to fixed position
+        dragCard.classList.add('dragging');
+        const startTop = cardRect.top;
+        dragCard.style.cssText = `position:fixed;top:${startTop}px;left:${cardRect.left}px;width:${cardW}px;z-index:200;margin:0;pointer-events:none;`;
+
+        const startY = e.clientY;
+
+        // Always keeps the bench label after the 5th slot (card or placeholder)
+        const syncBenchLabel = () => {
+          const benchLabel = document.getElementById('rosterBenchLabel');
+          if (!benchLabel) return;
+          const slots = Array.from(listEl.children).filter(el =>
+            (el.classList.contains('card') && el !== dragCard) ||
+            el.classList.contains('drag-placeholder')
+          );
+          if (slots.length >= 5 && slots[4].nextSibling !== benchLabel) {
+            slots[4].after(benchLabel);
+          }
+        };
+
+        const onMove = (ev) => {
+          dragCard.style.top = (startTop + ev.clientY - startY) + 'px';
+
+          // Reorder placeholder among non-dragged, non-label siblings
+          const siblings = Array.from(listEl.children).filter(el =>
+            el !== placeholder && el !== dragCard && el.id !== 'rosterBenchLabel'
+          );
+          let insertBefore = null;
+          for (const sib of siblings) {
+            const r = sib.getBoundingClientRect();
+            if (ev.clientY < r.top + r.height / 2) { insertBefore = sib; break; }
+          }
+          if (insertBefore) listEl.insertBefore(placeholder, insertBefore);
+          else listEl.appendChild(placeholder);
+
+          syncBenchLabel();
+        };
+
+        const onUp = () => {
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          dragCard.style.cssText = '';
+          dragCard.classList.remove('dragging');
+          listEl.insertBefore(dragCard, placeholder);
+          placeholder.remove();
+          const newOrder = Array.from(listEl.querySelectorAll(':scope > .card'))
+            .map(el => Number(el.dataset.id));
+          onReorder(newOrder);
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      };
+    }
+
     function enableDragReorder(listEl, ids, onReorder) {
       const elements = Array.from(listEl.querySelectorAll(':scope > .card'));
       elements.forEach((el, idx) => {
@@ -969,19 +1239,13 @@
       $('rosterCount').textContent = `${active.length} / 10 playing today`;
 
       const activeList = $('activeList');
-      activeList.innerHTML = rotation.map(p => rosterCardHtml(p, true)).join('')
-        + `<div id="rosterDivider" class="court-divider hidden"><span>Bench</span></div>`;
 
-      // position the bench divider after the 5th rotation player
-      const divider = $('rosterDivider');
-      if (rotation.length > 5) {
-        const cards = activeList.querySelectorAll('.card');
-        const fifth = cards[4];
-        divider.style.top = (fifth.offsetTop + fifth.offsetHeight) + 'px';
-        divider.classList.remove('hidden');
-      } else {
-        divider.classList.add('hidden');
+      // Render all rotation players, injecting the bench label after position 5
+      const cards = rotation.map(p => rosterCardHtml(p, true));
+      if (rotation.length >= 5) {
+        cards.splice(5, 0, `<div id="rosterBenchLabel" class="bench-section-label" style="margin-top:6px;">Bench</div>`);
       }
+      activeList.innerHTML = cards.join('');
 
       const outList = $('outOfRotationList');
       const outLabel = $('outOfRotationLabel');
@@ -1003,7 +1267,7 @@
         inactiveList.innerHTML = '';
       }
 
-      // attach listeners on all three lists
+      // attach listeners
       [activeList, outList, inactiveList].forEach(list => {
         list.querySelectorAll('[data-action="remove"]').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -1024,7 +1288,6 @@
             team = team.filter(t => t.id !== id);
             p.active = !p.active;
             if (p.active) {
-              // joins the bottom of today's lineup (the bench)
               let lastActiveIdx = -1;
               team.forEach((t, i) => { if (t.active) lastActiveIdx = i; });
               team.splice(lastActiveIdx + 1, 0, p);
@@ -1035,36 +1298,34 @@
             renderSetup();
           });
         });
-
-        // hold a player's name/badge to open the height / rotation menu
         enableLongPress(list, '.player-info', (el) => {
           const id = Number(el.closest('.card').dataset.id);
           openPlayerMenu(id, 'team');
         });
       });
 
-      // drag-to-reorder today's lineup (rotation players only)
-      const rotationIds = rotation.map(p => p.id);
-      enableDragReorder(activeList, rotationIds, (newOrder) => {
-        const outIds = new Set(outOfRotation.map(p => p.id));
-        const inactiveIds = new Set(inactive.map(p => p.id));
-        team = [
-          ...newOrder.map(id => team.find(p => p.id === id)),
-          ...team.filter(p => outIds.has(p.id)),
-          ...team.filter(p => inactiveIds.has(p.id)),
-        ];
-        saveTeam();
-        renderSetup();
-      });
+      // drag-to-reorder: DOM-lifting approach so the bench label tracks live
+      if (rotation.length > 0) {
+        enableSetupListDrag(activeList, (newOrder) => {
+          const outIds = new Set(outOfRotation.map(p => p.id));
+          const inactiveIds = new Set(inactive.map(p => p.id));
+          team = [
+            ...newOrder.map(id => team.find(p => p.id === id)),
+            ...team.filter(p => outIds.has(p.id)),
+            ...team.filter(p => inactiveIds.has(p.id)),
+          ];
+          saveTeam();
+          renderSetup();
+        });
+      }
 
       // start button state
       const startBtn = $('startBtn');
       const startHint = $('startHint');
-
       if (rotation.length >= 5) {
         startBtn.disabled = false;
         startHint.textContent = rotation.length > 5
-          ? "First 5 in Today's Lineup are your starting five. The rest start on the bench."
+          ? 'Drag to reorder — top 5 start on court, the rest start on the bench.'
           : 'These 5 will start on the court.';
       } else {
         startBtn.disabled = true;
@@ -1079,9 +1340,9 @@
       const isOut = p.outOfRotation;
       const catBadge = `<span class="cat-badge ${p.category}">${p.category}</span>`;
       const subsLine = p.subCount === 1 ? '1 SUB' : `${p.subCount} SUBS`;
-      const energyPct = Math.round((getPlayerEnergyMs(p) / ENERGY_MAX_MS) * 100);
+      const energyPct = Math.round((getPlayerEnergyMs(p) / getEnergyMaxMs()) * 100);
       const energyBar = `
-        <div class="energy-bar" title="Energy ${energyPct}%">
+        <div class="energy-bar" title="Energy ${energyPct}%" style="${settings.fatigueEnabled ? '' : 'display:none;'}">
           <div class="energy-fill" style="height:${energyPct}%; background:${energyColor(energyPct)};"></div>
         </div>
       `;
@@ -1459,8 +1720,45 @@
     $('subBtn').addEventListener('click', performSubstitution);
     $('clockToggleBtn').addEventListener('click', toggleClock);
 
-    $('menuBackdrop').addEventListener('click', closePlayerMenu);
+    $('menuBackdrop').addEventListener('click', () => {
+      closePlayerMenu();
+      closeSettings();
+    });
     $('menuCancel').addEventListener('click', closePlayerMenu);
+
+    // ---------- Settings panel ----------
+    function openSettings() {
+      applySettingsToUI();
+      $('settingsPanel').classList.add('show');
+      $('menuBackdrop').classList.add('show');
+    }
+    function closeSettings() {
+      $('settingsPanel').classList.remove('show');
+      $('menuBackdrop').classList.remove('show');
+    }
+
+    $('settingsBtn').addEventListener('click', openSettings);
+    $('settingsClose').addEventListener('click', closeSettings);
+
+    $('settingFatigueEnabled').addEventListener('change', () => {
+      settings.fatigueEnabled = $('settingFatigueEnabled').checked;
+      saveSettings();
+      applySettingsToUI();
+      updateTimeDisplays();
+      if (document.getElementById('gameScreen') && !document.getElementById('gameScreen').classList.contains('hidden')) {
+        renderGame();
+      }
+    });
+
+    $('settingFatigueMinutes').addEventListener('change', () => {
+      const val = parseInt($('settingFatigueMinutes').value, 10);
+      if (!isNaN(val) && val >= 1 && val <= 30) {
+        settings.fatigueMinutes = val;
+        saveSettings();
+      } else {
+        $('settingFatigueMinutes').value = settings.fatigueMinutes;
+      }
+    });
 
     $('menuToggleHeight').addEventListener('click', () => {
       const p = getMenuPlayer();
@@ -1567,6 +1865,7 @@
     });
 
     // ---------- Init ----------
+    loadSettings();
     loadTeam();
     renderSetup();
 
