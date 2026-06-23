@@ -1,0 +1,3521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#14161a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<title>RotationHQ</title>
+<style>
+  :root {
+    --bg: #14161a;
+    --surface: #1e2227;
+    --surface-2: #262b32;
+    --border: #343a42;
+    --text: #f5f3ef;
+    --text-muted: #8a8f98;
+    --accent: #ff8a3d;
+    --tall: #4fb7e8;
+    --short: #8fd14f;
+    --warn: #e8574f;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Roboto', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 60px;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-header h1 {
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    font-size: 28px;
+    margin: 0;
+  }
+  .app-header h1 .hq { color: var(--accent); }
+  .brand-row { display: flex; align-items: center; gap: 12px; }
+  .brand-icon { flex-shrink: 0; }
+  .app-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .app-header-title { flex: 1; }
+  .app-header .tagline {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 4px 0 22px;
+    line-height: 1.5;
+  }
+  .settings-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 4px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .settings-btn:active { color: var(--text); }
+
+  .header-actions { display: flex; align-items: center; gap: 4px; margin-top: 2px; flex-shrink: 0; }
+
+  .info-btn {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-muted);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .info-btn:active { color: var(--text); border-color: var(--text-muted); }
+
+  /* Help screen */
+  .help-screen {
+    position: fixed;
+    inset: 0;
+    background: #f7f6f3;
+    z-index: 200;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: none;
+  }
+  .help-screen.show { display: block; }
+
+  .help-topbar {
+    position: sticky;
+    top: 0;
+    background: #14161a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    z-index: 10;
+  }
+  .help-topbar-title {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: #f5f3ef;
+  }
+  .help-topbar-title .hq { color: #ff8a3d; }
+  .help-close {
+    background: transparent;
+    border: none;
+    color: #8a8f98;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+
+  .help-section {
+    padding: 22px 18px;
+    border-bottom: 1px solid #e2e0db;
+  }
+  .help-section:last-of-type { border-bottom: none; }
+
+  .help-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff3eb;
+    color: #ff8a3d;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  .help-heading {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #1a1c20;
+    margin-bottom: 4px;
+  }
+  .help-intro {
+    font-size: 13px;
+    color: #6b6f78;
+    margin-bottom: 16px;
+    line-height: 1.55;
+  }
+
+  .help-callout {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: #ffffff;
+    border: 1px solid #e2e0db;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .help-callout:last-of-type { margin-bottom: 0; }
+  .help-dot {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ff8a3d;
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+  .help-callout-title {
+    font-weight: 700;
+    font-size: 13px;
+    color: #1a1c20;
+    margin-bottom: 2px;
+  }
+  .help-callout-desc {
+    font-size: 12px;
+    color: #6b6f78;
+    line-height: 1.55;
+  }
+  .help-callout-desc strong { color: #1a1c20; }
+
+  .help-tip {
+    background: #fff3eb;
+    border-left: 3px solid #ff8a3d;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #7a3a10;
+    margin-top: 14px;
+    line-height: 1.55;
+  }
+  .help-tip strong { color: #ff8a3d; }
+
+  .help-footer {
+    background: #14161a;
+    padding: 20px 18px;
+    text-align: center;
+    font-size: 12px;
+    color: #8a8f98;
+    line-height: 1.7;
+  }
+
+  /* Help screen phone mockups */
+  .help-phone-wrap { display: flex; justify-content: center; margin: 0 0 18px; }
+  .help-phone { position: relative; width: 220px; }
+  .help-phone-shell {
+    background: #14161a;
+    border-radius: 28px;
+    border: 2px solid #2a2d33;
+    padding: 14px 10px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+    position: relative;
+  }
+  .help-phone-notch {
+    width: 60px; height: 8px;
+    background: #2a2d33;
+    border-radius: 4px;
+    margin: 0 auto 10px;
+  }
+  .help-ann {
+    position: absolute;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #ff8a3d;
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px #f7f6f3, 0 2px 6px rgba(0,0,0,0.25);
+    z-index: 10;
+  }
+  /* Mini app UI elements inside help mockups */
+  .hm-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; padding: 0 2px;
+  }
+  .hm-wordmark {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 800; font-size: 13px; color: #f5f3ef;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .hm-wordmark .hq { color: #ff8a3d; }
+  .hm-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 700; font-size: 9px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: #8a8f98; margin: 6px 0 3px;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .hm-dot { width: 5px; height: 5px; border-radius: 50%; background: #ff8a3d; flex-shrink: 0; }
+  .hm-field {
+    background: #262b32; border: 1px solid #343a42;
+    border-radius: 7px; padding: 6px 8px;
+    font-size: 10px; color: #8a8f98; margin-bottom: 5px;
+  }
+  .hm-field.filled { color: #f5f3ef; }
+  .hm-card {
+    display: flex; align-items: center; gap: 5px;
+    background: #1e2227; border: 1px solid #343a42;
+    border-radius: 7px; padding: 5px 7px; margin-bottom: 3px;
+  }
+  .hm-card.selected { border-color: #ff8a3d; box-shadow: 0 0 0 1px rgba(255,138,61,0.3); }
+  .hm-card.dim { opacity: 0.5; }
+  .hm-grip { font-size: 9px; color: #8a8f98; width: 8px; }
+  .hm-num { font-family: 'Roboto Condensed', sans-serif; font-weight: 800; font-size: 11px; color: #ff8a3d; width: 18px; text-align: center; flex-shrink: 0; }
+  .hm-name { font-size: 10px; font-weight: 600; color: #f5f3ef; flex: 1; }
+  .hm-badge { font-size: 8px; font-weight: 700; text-transform: uppercase; color: #8a8f98; background: #262b32; border-radius: 3px; padding: 1px 4px; }
+  .hm-energy { width: 4px; height: 18px; background: #262b32; border-radius: 2px; overflow: hidden; flex-shrink: 0; display: flex; align-items: flex-end; }
+  .hm-energy-fill { width: 100%; border-radius: 2px; }
+  .hm-time { font-family: monospace; font-size: 8px; color: #8a8f98; white-space: nowrap; }
+  .hm-clock {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #262b32; border-radius: 7px; padding: 6px 8px; margin-bottom: 7px;
+  }
+  .hm-clock-lbl { font-size: 8px; color: #8a8f98; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 3px; }
+  .hm-clock-time { font-family: 'Roboto Condensed', sans-serif; font-weight: 800; font-size: 14px; color: #f5f3ef; }
+  .hm-btn { border-radius: 7px; font-family: 'Roboto Condensed', sans-serif; font-weight: 800; font-size: 9px; text-transform: uppercase; padding: 5px 8px; border: none; background: #ff8a3d; color: #fff; }
+  .hm-btn.ghost { background: transparent; border: 1px solid #343a42; color: #8a8f98; }
+  .hm-btn.warn { background: transparent; border: 1px solid #e8574f; color: #e8574f; }
+  .hm-sub { background: #ff8a3d; border-radius: 7px; padding: 6px; text-align: center; font-family: 'Roboto Condensed', sans-serif; font-weight: 800; font-size: 10px; color: #fff; margin-top: 5px; }
+  .hm-divider { font-size: 8px; color: #8a8f98; text-align: center; margin: 3px 0; }
+  .hm-menu {
+    background: #1e2227; border: 1px solid #343a42;
+    border-radius: 12px; overflow: hidden; margin-top: 4px;
+  }
+  .hm-menu-item { padding: 8px 10px; font-size: 10px; color: #f5f3ef; border-bottom: 1px solid #343a42; }
+  .hm-menu-item:last-child { border-bottom: none; }
+  .hm-menu-item.warn { color: #e8574f; }
+  .hm-menu-item.muted { color: #8a8f98; font-weight: 700; }
+  .hm-menu-header { padding: 8px 10px; font-size: 10px; font-weight: 700; color: #8a8f98; border-bottom: 1px solid #343a42; }
+
+  /* Settings panel */
+  .settings-panel {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    z-index: 100;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+  .settings-panel.show { transform: translateY(0); pointer-events: auto; }
+
+  .settings-header {
+    padding: 18px 20px 14px;
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .settings-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-stack { flex-direction: column; align-items: stretch; }
+  .settings-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    padding: 14px 20px 0;
+  }
+  .settings-label { font-size: 15px; font-weight: 600; }
+  .settings-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 22px; height: 22px;
+    top: 3px; left: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+  .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
+
+  /* Minutes input */
+  .settings-minutes-input {
+    width: 64px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Roboto Mono', monospace;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-align: center;
+    outline: none;
+    flex-shrink: 0;
+  }
+  .settings-minutes-suffix {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+
+  /* Add player */
+  .add-player {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 6px;
+  }
+  .add-player input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    outline: none;
+  }
+  .add-player input:focus { border-color: var(--accent); }
+
+  .add-player-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .add-player-row input { margin-bottom: 0; }
+  .add-player-row input:not(.number-input) { flex: 1; min-width: 0; }
+  .add-player-row .number-input { width: 40px; flex: 0 0 auto; padding: 12px 4px; text-align: center; }
+
+  .cat-select {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8f98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 18px;
+    padding-right: 38px;
+  }
+  .cat-select optgroup {
+    font-size: 11px;
+    font-weight: 800;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    background: var(--surface);
+  }
+  .cat-select optgroup option {
+    font-size: 15px;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--text);
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 14px;
+  }
+  .btn-accent { background: var(--accent); color: #1a1106; }
+  .btn-warn { background: var(--warn); color: #1a1106; }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-large { font-size: 16px; padding: 16px; margin-top: 16px; }
+  .btn-sm { padding: 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.35; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-muted); margin-top: 26px; }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 16px; }
+  .toolbar .btn { flex: 1; width: auto; }
+  .toolbar .btn-ghost { margin-top: 0; }
+
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row .btn { flex: 1; margin-top: 0; }
+
+  .game-add-player { margin: -4px 0 16px; }
+
+  .roster-count {
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'Roboto Mono', monospace;
+    margin: 8px 4px 16px;
+  }
+
+  .list-label {
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 18px 4px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .list-label.live { color: var(--accent); }
+  .list-label .list-sub {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .game-clock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 6px;
+  }
+  .game-clock-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .game-clock-time {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .game-clock .btn {
+    width: auto;
+    margin: 0;
+    padding: 12px 22px;
+    flex-shrink: 0;
+  }
+
+  .card-list { display: flex; flex-direction: column; gap: 8px; position: relative; }
+  .drag-placeholder { border-radius: var(--radius); background: transparent; border: 2px dashed var(--border); flex-shrink: 0; }
+
+  .next-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--accent);
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding-left: 4px;
+  }
+
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    user-select: none;
+    -webkit-touch-callout: none;
+    transition: background 0.15s ease;
+  }
+  .card.selectable { cursor: pointer; }
+  .card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,138,61,0.25); }
+  .card.dragging { box-shadow: 0 8px 24px rgba(0,0,0,0.45); border-color: var(--accent); background: var(--surface-2); }
+  .card.pressing { background: var(--surface-2); }
+
+  .drag-handle {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    touch-action: none;
+  }
+
+  .order-badge {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: 6px;
+    padding: 2px 6px;
+    flex-shrink: 0;
+    min-width: 22px;
+    text-align: center;
+  }
+
+  .player-info { flex: 1; min-width: 0; }
+  .player-name { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .jersey-number {
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    font-size: 19px;
+    color: var(--text);
+    min-width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .jersey-number.empty { color: var(--border); }
+
+  .cat-badge {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
+
+  .energy-bar {
+    flex-shrink: 0;
+    width: 8px;
+    height: 36px;
+    background: #0c0d10;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .energy-fill {
+    width: 100%;
+    border-radius: 3px;
+    transition: height 1s linear, background-color 1s linear;
+  }
+
+  .sub-counter {
+    font-family: 'Roboto Mono', monospace;
+    text-align: center;
+    flex-shrink: 0;
+    background: #0c0d10;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+    min-width: 58px;
+  }
+  .sub-counter .player-time { font-size: 16px; font-weight: 700; color: var(--accent); line-height: 1.35; display: block; }
+  .sub-counter .subs-line { font-size: 9px; color: var(--text-muted); letter-spacing: 0.08em; }
+
+  .remove-btn {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .active-toggle {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+  }
+  .active-toggle.checked {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #1a1106;
+  }
+
+  .card.inactive { opacity: 0.55; }
+
+  .court-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--accent);
+    margin: 14px 0 6px;
+    pointer-events: none;
+  }
+  .court-divider::before, .court-divider::after { display: none; }
+  .court-divider span { color: var(--accent); }
+  .bench-section-label {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 14px 0 6px;
+  }
+
+  .hint { color: var(--text-muted); font-size: 12px; margin: 10px 4px 14px; line-height: 1.5; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px; left: 16px; right: 16px;
+    max-width: 448px; margin: 0 auto;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    text-align: center;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--short); color: var(--short); }
+  .toast.error { border-color: var(--warn); color: var(--warn); }
+
+  .hidden { display: none !important; }
+
+  .sub-bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px 16px;
+    margin: 16px -16px -16px;
+  }
+  .sub-bar .btn { margin-top: 0; }
+  .sub-hint { color: var(--text-muted); font-size: 12px; text-align: center; margin: 8px 0 0; line-height: 1.5; }
+  .sub-hint.warn { color: var(--warn); }
+
+  .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .menu-backdrop.show { opacity: 1; pointer-events: auto; }
+
+  .player-menu {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+    z-index: 100;
+    transform: translateY(100%);
+    transition: transform 0.2s ease;
+    padding-bottom: 8px;
+    pointer-events: none;
+  }
+  .player-menu.show { transform: translateY(0); pointer-events: auto; }
+
+  .player-menu-header {
+    padding: 16px;
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .player-menu-item {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .player-menu-item:last-child { border-bottom: none; }
+  .player-menu-item.warn { color: var(--warn); }
+  .player-menu-item.cancel { color: var(--text-muted); font-weight: 700; }
+
+  .player-menu-edit { padding: 14px 16px; }
+  .player-menu-edit .add-player-row { margin-bottom: 10px; }
+  .player-menu-edit input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 0;
+    outline: none;
+  }
+
+  /* End-game / clock actions */
+  .btn-ghost-warn { background: transparent; border: 1px solid var(--warn); color: var(--warn); }
+
+  /* Game history */
+  .screen-title {
+    font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 20px;
+    margin: 0 0 14px;
+  }
+  .back-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 0;
+    margin-bottom: 10px;
+  }
+  .back-btn:active { color: var(--text); }
+  .history-detail-bar { display: flex; align-items: center; justify-content: space-between; }
+  .history-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .history-log-entry {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-log-entry:last-child { border-bottom: none; }
+  .history-log-time {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+    flex-shrink: 0;
+    width: 56px;
+  }
+  .history-log-detail { font-size: 13px; line-height: 1.6; flex: 1; }
+  .history-in { color: var(--short); }
+  .history-out { color: var(--warn); }
+
+  .hist-chip-group { display: flex; align-items: flex-start; gap: 8px; }
+  .hist-chip-group + .hist-chip-group { margin-top: 6px; }
+  .hist-chip-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    width: 28px;
+    flex-shrink: 0;
+    padding-top: 5px;
+  }
+  .hist-chip-row { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+  .hist-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 3px 7px;
+    line-height: 1.3;
+  }
+  .hist-chip-label { font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .hist-chip-bar {
+    width: 5px;
+    height: 15px;
+    background: #0c0d10;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .hist-chip-bar-fill { width: 100%; border-radius: 2px; }
+  .hist-chip-time {
+    font-family: 'Roboto Mono', monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+    font-size: 10px;
+  }
+
+  .print-banner { display: none; }
+
+  /* Print / Save-as-PDF — only the open game's detail report is shown, flipped to a light, paper-friendly theme */
+  @media print {
+    :root {
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #f3f3f4;
+      --border: #cfcfd2;
+      --text: #16181c;
+      --text-muted: #5b5f68;
+      --accent: #c0541e;
+      --tall: #1f6fa8;
+      --short: #3f7d1c;
+      --warn: #b8392f;
+    }
+    body, .app { background: #fff !important; height: auto !important; overflow: visible !important; }
+    .app-header, #toast, .menu-backdrop, .settings-panel, .player-menu,
+    #historyListView, .history-detail-bar, .no-print { display: none !important; }
+    .print-banner {
+      display: block;
+      font-family: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .history-log-entry { break-inside: avoid; }
+    .card, .hist-chip { box-shadow: none !important; }
+    .energy-fill, .hist-chip-bar-fill, .cat-badge {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="app-header-title">
+        <div class="brand-row">
+          <svg class="brand-icon" width="30" height="30" viewBox="0 0 100 100">
+            <circle cx="50" cy="54.7" r="36" fill="none" stroke="#f5f3ef" stroke-width="5.2"/>
+            <line x1="40" y1="10" x2="60" y2="10" stroke="#f5f3ef" stroke-width="5.2" stroke-linecap="round"/>
+            <line x1="50" y1="54.7" x2="50" y2="30.9" stroke="#ff8a3d" stroke-width="5.2" stroke-linecap="round"/>
+            <line x1="50" y1="54.7" x2="68" y2="54.7" stroke="#ff8a3d" stroke-width="5.2" stroke-linecap="round"/>
+          </svg>
+          <h1>Rotation<span class="hq">HQ</span></h1>
+        </div>
+        <p class="tagline" id="tagline">Build your team, then select who's playing and drag to set your starting five.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="infoBtn" class="info-btn" title="How to use">i</button>
+        <button type="button" id="settingsBtn" class="settings-btn" title="Settings">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section id="setupScreen" class="screen">
+        <div class="add-player">
+          <div class="list-label" style="margin-bottom: 8px;">Game Details <span class="list-sub">— optional, can also be set when you end the game</span></div>
+          <input type="text" id="gameTitleInput" placeholder="e.g. vs Eagles — Round 4" maxlength="40" autocomplete="off" style="margin-bottom: 0;" />
+        </div>
+
+        <div class="add-player">
+          <div class="add-player-row">
+            <input type="text" id="numberInput" class="number-input" placeholder="#" maxlength="2" inputmode="numeric" autocomplete="off" />
+            <input type="text" id="nameInput" placeholder="Player name" maxlength="18" autocomplete="off" />
+          </div>
+          <select id="catSelect" class="cat-select">
+            <option value="">No Position</option>
+            <optgroup label="Beginner — by height">
+              <option value="tall">Tall</option>
+              <option value="short">Short</option>
+            </optgroup>
+            <optgroup label="Advanced — by position">
+              <option value="centre">Centre</option>
+              <option value="forward">Forward</option>
+              <option value="sg">Shooting Guard (SG)</option>
+              <option value="pg">Point Guard (PG)</option>
+            </optgroup>
+          </select>
+          <button type="button" id="addBtn" class="btn btn-accent">Add to Team</button>
+        </div>
+        <p class="roster-count" id="rosterCount">0 / 12 playing today</p>
+
+        <div class="list-label">Today's Lineup <span class="list-sub">— circle to sit out, hold name to edit, drag to reorder</span></div>
+        <div class="bench-section-label">Starting 5</div>
+        <div id="activeList" class="card-list"></div>
+
+        <div class="list-label hidden" id="outOfRotationLabel">Out of Rotation <span class="list-sub">— hold name to return to rotation</span></div>
+        <div id="outOfRotationList" class="card-list"></div>
+
+        <div class="list-label hidden" id="inactiveLabel">Not Playing Today <span class="list-sub">— tap the circle to add back</span></div>
+        <div id="inactiveList" class="card-list"></div>
+
+        <button type="button" id="startBtn" class="btn btn-primary btn-large" disabled>Start Game</button>
+        <p class="hint" id="startHint">Add at least 5 players to start.</p>
+        <button type="button" id="historyBtn" class="btn btn-ghost btn-sm" style="margin-top:6px;">Game History</button>
+      </section>
+
+      <section id="gameScreen" class="screen hidden">
+        <div class="game-clock">
+          <div>
+            <div class="game-clock-label"><span class="live-dot" id="clockDot" style="display:none;"></span> Game Clock</div>
+            <div class="game-clock-time" id="gameClockTime">0:00</div>
+          </div>
+          <button type="button" id="clockToggleBtn" class="btn btn-accent">Start</button>
+        </div>
+        <button type="button" id="endGameBtn" class="btn btn-ghost-warn btn-sm hidden" style="margin: 10px 0 16px;">End Game</button>
+        <p class="hint" style="margin-top: -2px;">Start the clock when play begins, pause it for stoppages or halftime — each player's on-court time below only counts while it's running. The small bar next to each name fills up the longer they've played non-stop (max at 7 min) and drains while they rest.</p>
+
+        <div class="toolbar">
+          <button type="button" id="undoBtn" class="btn btn-ghost btn-sm" disabled>Undo</button>
+          <button type="button" id="addPlayerToggleBtn" class="btn btn-ghost btn-sm">+ Add Player</button>
+        </div>
+
+        <div id="gameAddPlayer" class="add-player game-add-player hidden">
+          <div class="add-player-row">
+            <input type="text" id="gameNumberInput" class="number-input" placeholder="#" maxlength="2" inputmode="numeric" autocomplete="off" />
+            <input type="text" id="gameNameInput" placeholder="Player name" maxlength="18" autocomplete="off" />
+          </div>
+          <select id="gameCatSelect" class="cat-select">
+            <option value="">No Position</option>
+            <optgroup label="Beginner — by height">
+              <option value="tall">Tall</option>
+              <option value="short">Short</option>
+            </optgroup>
+            <optgroup label="Advanced — by position">
+              <option value="centre">Centre</option>
+              <option value="forward">Forward</option>
+              <option value="sg">Shooting Guard (SG)</option>
+              <option value="pg">Point Guard (PG)</option>
+            </optgroup>
+          </select>
+          <div class="btn-row">
+            <button type="button" id="gameAddBtn" class="btn btn-accent">Add to Bench</button>
+            <button type="button" id="gameAddCancelBtn" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+
+        <div class="list-label live"><span class="live-dot"></span> On Court</div>
+        <p class="hint" style="margin-top: -2px;">Tap the circle to select players coming off. Drag to reorder — new subs join at the bottom, so the top of the list has been in longest.</p>
+        <div id="courtList" class="card-list"></div>
+
+
+        <div class="bench-section-label" style="margin: 22px 0 6px;">Bench</div>
+        <p class="hint">Tap the circle to select players going in, then hit Substitute below. If the height groups don't match, you'll get a warning with the option to swap anyway. Hold a player's name to change their height or mark them out of rotation if they're injured. Drag to reorder manually any time.</p>
+        <div id="benchList" class="card-list"></div>
+
+        <div class="list-label hidden" id="gameOutLabel">Out of Rotation <span class="list-sub">— hold name to return to rotation</span></div>
+        <div id="gameOutList" class="card-list"></div>
+
+        <button type="button" id="newGameBtn" class="btn btn-ghost">New Game</button>
+
+        <div id="subBar" class="sub-bar hidden">
+          <button type="button" id="subBtn" class="btn btn-accent btn-large" disabled>Substitute</button>
+          <p id="subHint" class="sub-hint hidden"></p>
+        </div>
+      </section>
+
+      <section id="historyScreen" class="screen hidden">
+        <div id="historyListView">
+          <button type="button" id="historyBackBtn" class="back-btn">&larr; Back</button>
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h2 class="screen-title" style="margin-bottom:0;">Game History</h2>
+            <div style="display:flex; gap:14px; align-items:center;">
+              <button type="button" id="historySelectAllBtn" class="back-btn hidden" style="margin:0;">All</button>
+              <button type="button" id="historySelectBtn" class="back-btn hidden" style="margin:0;">Select</button>
+            </div>
+          </div>
+          <p class="hint" id="historyEmptyState" style="margin-top:14px;">No saved games yet — finish a game with "End Game" to save it here.</p>
+          <div id="historyList" class="card-list" style="margin-top:14px;"></div>
+
+          <div id="historyExportBar" class="sub-bar hidden">
+            <button type="button" id="historyExportConfirmBtn" class="btn btn-accent btn-large" disabled>Export (0)</button>
+          </div>
+        </div>
+
+        <div id="historyDetailView" class="hidden">
+          <div class="history-detail-bar">
+            <button type="button" id="historyDetailBackBtn" class="back-btn">&larr; All Games</button>
+            <div style="display:flex; gap:12px; align-items:center;">
+              <button type="button" id="historyPrintBtn" class="back-btn" style="margin:0;">PDF</button>
+              <button type="button" id="historyShareBtn" class="back-btn" style="margin:0;">Share</button>
+              <button type="button" id="historyDeleteBtn" class="settings-close" title="Delete game">&times;</button>
+            </div>
+          </div>
+          <div class="print-banner">RotationHQ — Game Report</div>
+          <h2 class="screen-title" id="historyDetailName"></h2>
+          <p class="hint" id="historyDetailMeta" style="margin-top:-8px;"></p>
+
+          <div class="bench-section-label">Player Summary</div>
+          <div id="historySummaryTable" class="card-list"></div>
+
+          <div class="bench-section-label" style="margin-top:18px;">Substitution Log</div>
+          <div id="historyLog"></div>
+        </div>
+      </section>
+
+      <section id="sharedGameScreen" class="screen hidden">
+        <p class="history-meta" style="margin-bottom:14px;">Shared from RotationHQ — view only</p>
+        <button type="button" id="sharedGamePrintBtn" class="back-btn no-print hidden" style="margin-bottom:10px;">Save as PDF</button>
+        <div class="print-banner">RotationHQ — Game Report</div>
+        <h2 class="screen-title" id="sharedGameName"></h2>
+        <p class="hint" id="sharedGameMeta" style="margin-top:-8px;"></p>
+
+        <div id="sharedGameError" class="hint hidden">This link couldn't be read — make sure it was copied in full.</div>
+
+        <div id="sharedGameContent" class="hidden">
+          <div class="bench-section-label">Player Summary</div>
+          <div id="sharedGameSummary" class="card-list"></div>
+
+          <div class="bench-section-label" style="margin-top:18px;">Substitution Log</div>
+          <div id="sharedGameLog"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Help / Quick-start guide screen -->
+  <div id="helpScreen" class="help-screen">
+    <div class="help-topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <svg width="20" height="20" viewBox="0 0 100 100">
+          <circle cx="50" cy="54.7" r="36" fill="none" stroke="#f5f3ef" stroke-width="5.5"/>
+          <line x1="40" y1="10" x2="60" y2="10" stroke="#f5f3ef" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="50" y1="54.7" x2="50" y2="30.9" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="50" y1="54.7" x2="68" y2="54.7" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/>
+        </svg>
+        <span class="help-topbar-title">Rotation<span class="hq">HQ</span> — How to use</span>
+      </div>
+      <button type="button" id="helpCloseBtn" class="help-close">&times;</button>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="help-section">
+      <div class="help-tag">Step 1</div>
+      <div class="help-heading">Before the game</div>
+      <div class="help-intro">Set up your roster and starting lineup before tip-off.</div>
+
+      <div class="help-phone-wrap">
+        <div class="help-phone">
+          <div class="help-phone-shell">
+            <div class="help-phone-notch"></div>
+            <div class="hm-header">
+              <div class="hm-wordmark">
+                <svg width="11" height="11" viewBox="0 0 100 100"><circle cx="50" cy="54.7" r="36" fill="none" stroke="#f5f3ef" stroke-width="5.5"/><line x1="40" y1="10" x2="60" y2="10" stroke="#f5f3ef" stroke-width="5.5" stroke-linecap="round"/><line x1="50" y1="54.7" x2="50" y2="30.9" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/><line x1="50" y1="54.7" x2="68" y2="54.7" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/></svg>
+                Rotation<span class="hq">HQ</span>
+              </div>
+            </div>
+            <div class="hm-label">Game Details</div>
+            <div class="hm-field filled">vs Eagles — Round 4</div>
+            <div class="hm-label">Add Player</div>
+            <div style="display:flex;gap:4px;margin-bottom:4px;">
+              <div class="hm-field" style="width:28px;text-align:center;margin-bottom:0;padding:6px 4px;">#7</div>
+              <div class="hm-field" style="flex:1;margin-bottom:0;">Player name</div>
+            </div>
+            <div class="hm-field" style="font-size:9px;">Position: None ▾</div>
+            <div class="hm-label"><span class="hm-dot" style="background:#8a8f98;"></span> Today's Lineup</div>
+            <div style="font-size:8px;color:#8a8f98;margin-bottom:3px;font-style:italic;padding-left:2px;">Starting 5</div>
+            <div class="hm-card">
+              <div class="hm-grip">⠿</div>
+              <div class="hm-num">#5</div>
+              <div class="hm-name">Jordan M.</div>
+              <div class="hm-badge">Tall</div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-grip">⠿</div>
+              <div class="hm-num">#7</div>
+              <div class="hm-name">Sam T.</div>
+              <div class="hm-badge">PG</div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-grip">⠿</div>
+              <div class="hm-num">#11</div>
+              <div class="hm-name">Riley K.</div>
+              <div class="hm-badge">SG</div>
+            </div>
+            <div class="hm-divider">— Bench —</div>
+            <div class="hm-card dim">
+              <div class="hm-grip">⠿</div>
+              <div class="hm-num">#3</div>
+              <div class="hm-name">Casey B.</div>
+              <div class="hm-badge">Short</div>
+            </div>
+            <!-- A → Game Details input field -->
+            <div class="help-ann" style="top:62px; right:-9px;">A</div>
+            <!-- B → Add Player inputs -->
+            <div class="help-ann" style="top:108px; right:-9px;">B</div>
+            <!-- C → drag handle on first lineup card -->
+            <div class="help-ann" style="top:214px; left:-9px;">C</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-callout">
+        <div class="help-dot">A</div>
+        <div>
+          <div class="help-callout-title">Name the game</div>
+          <div class="help-callout-desc">Type the opponent and round at the top. You can leave this blank and fill it in when you end the game.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">B</div>
+        <div>
+          <div class="help-callout-title">Add your players</div>
+          <div class="help-callout-desc">Enter their number, name, and position. Add everyone who might feature today.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">C</div>
+        <div>
+          <div class="help-callout-title">Set your starting 5</div>
+          <div class="help-callout-desc">Drag the ⠿ handle to reorder. The top 5 are your starters — everyone below is on the bench, next up in that order.</div>
+        </div>
+      </div>
+      <div class="help-tip"><strong>Tip:</strong> Hold down on any player's name to edit their details or reorder their position in the queue.</div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="help-section">
+      <div class="help-tag">Step 2</div>
+      <div class="help-heading">During the game</div>
+      <div class="help-intro">Tap Start when play begins. Select players to swap, then hit Substitute.</div>
+
+      <div class="help-phone-wrap">
+        <div class="help-phone">
+          <div class="help-phone-shell">
+            <div class="help-phone-notch"></div>
+            <div class="hm-header">
+              <div class="hm-wordmark">
+                <svg width="11" height="11" viewBox="0 0 100 100"><circle cx="50" cy="54.7" r="36" fill="none" stroke="#f5f3ef" stroke-width="5.5"/><line x1="40" y1="10" x2="60" y2="10" stroke="#f5f3ef" stroke-width="5.5" stroke-linecap="round"/><line x1="50" y1="54.7" x2="50" y2="30.9" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/><line x1="50" y1="54.7" x2="68" y2="54.7" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/></svg>
+                Rotation<span class="hq">HQ</span>
+              </div>
+            </div>
+            <div class="hm-clock">
+              <div>
+                <div class="hm-clock-lbl"><span class="hm-dot"></span> Game Clock</div>
+                <div class="hm-clock-time">14:32</div>
+              </div>
+              <div class="hm-btn">Pause</div>
+            </div>
+            <div class="hm-label"><span class="hm-dot"></span> On Court</div>
+            <div class="hm-card selected">
+              <div class="hm-num">#5</div>
+              <div class="hm-name">Jordan M.</div>
+              <div class="hm-badge">Tall</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:85%;background:#8fd14f;"></div></div>
+              <div class="hm-time">8:12</div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-num">#7</div>
+              <div class="hm-name">Sam T.</div>
+              <div class="hm-badge">PG</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:55%;background:#f5a623;"></div></div>
+              <div class="hm-time">6:01</div>
+            </div>
+            <div class="hm-card">
+              <div class="hm-num">#11</div>
+              <div class="hm-name">Riley K.</div>
+              <div class="hm-badge">SG</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:92%;background:#e8574f;"></div></div>
+              <div class="hm-time">9:45</div>
+            </div>
+            <div class="hm-label" style="margin-top:5px;">↑ Next Sub In</div>
+            <div class="hm-card selected">
+              <div class="hm-num">#3</div>
+              <div class="hm-name">Casey B.</div>
+              <div class="hm-badge">Short</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:20%;background:#8fd14f;"></div></div>
+              <div class="hm-time">2:10</div>
+            </div>
+            <div class="hm-card dim">
+              <div class="hm-num">#9</div>
+              <div class="hm-name">Alex P.</div>
+              <div class="hm-badge">Forward</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:8%;background:#8fd14f;"></div></div>
+              <div class="hm-time">0:48</div>
+            </div>
+            <div class="hm-sub">Substitute ✓</div>
+            <!-- D → Game clock row -->
+            <div class="help-ann" style="top:30px; left:-9px;">D</div>
+            <!-- E → energy bar on first on-court card -->
+            <div class="help-ann" style="top:96px; right:-9px;">E</div>
+            <!-- F → selected (orange) cards — top of each list -->
+            <div class="help-ann" style="top:82px; left:-9px;">F</div>
+            <!-- G → Substitute button -->
+            <div class="help-ann" style="bottom:6px; left:-9px;">G</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-callout">
+        <div class="help-dot">D</div>
+        <div>
+          <div class="help-callout-title">Game clock</div>
+          <div class="help-callout-desc">Tap Start when the game begins. Pause it during stoppages — player time only counts while the clock is running.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">E</div>
+        <div>
+          <div class="help-callout-title">Energy bar</div>
+          <div class="help-callout-desc">The small bar next to each name fills up green → red the longer a player has been on court without a rest. Red means they're due a break.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">F</div>
+        <div>
+          <div class="help-callout-title">Making a substitution</div>
+          <div class="help-callout-desc">Tap one player on court and one on the bench — both highlight orange — then tap Substitute. The bench queue slides up to show who's next.<br><br><strong>Works best from the top of each list</strong> — the player at the top of On Court has been on longest, and the top of the bench is next in the rotation. Subbing from both tops keeps things fair automatically.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">G</div>
+        <div>
+          <div class="help-callout-title">Substitute button</div>
+          <div class="help-callout-desc">Only activates once you've selected a matching pair. If positions don't match it'll warn you first — you can override it.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px;color:#6b6f78;margin:14px 0 10px;font-weight:600;">Removing a player from rotation</div>
+
+      <div class="help-phone-wrap">
+        <div class="help-phone">
+          <div class="help-phone-shell">
+            <div class="help-phone-notch"></div>
+            <div class="hm-label" style="margin-top:0;">↑ Next Sub In</div>
+            <div class="hm-card">
+              <div class="hm-num">#5</div>
+              <div class="hm-name">Jordan M.</div>
+              <div class="hm-badge">Tall</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:85%;background:#8fd14f;"></div></div>
+              <div class="hm-time">8:12</div>
+            </div>
+            <div class="hm-card" style="border-color:#ff8a3d;box-shadow:0 0 0 1px rgba(255,138,61,0.3);">
+              <div class="hm-num">#11</div>
+              <div class="hm-name">Riley K.</div>
+              <div class="hm-badge">SG</div>
+              <div class="hm-energy"><div class="hm-energy-fill" style="height:92%;background:#e8574f;"></div></div>
+              <div class="hm-time">9:45</div>
+            </div>
+            <div style="font-size:8px;color:#8a8f98;text-align:center;padding:3px 0 3px;font-style:italic;">hold player name to open menu</div>
+            <div class="hm-menu">
+              <div class="hm-menu-header">#11 Riley K.</div>
+              <div class="hm-menu-item">Edit Player</div>
+              <div class="hm-menu-item warn">Remove from rotation</div>
+              <div class="hm-menu-item muted">Cancel</div>
+            </div>
+            <!-- H → "Remove from rotation" menu item -->
+            <div class="help-ann" style="bottom:38px; right:-9px;">H</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-callout">
+        <div class="help-dot">H</div>
+        <div>
+          <div class="help-callout-title">Removing a player from rotation</div>
+          <div class="help-callout-desc"><strong>Hold down on any player's name</strong> to open their options. Mark them as <em>out of rotation</em> for an injured player sitting out, or a development player on limited minutes. They move to a separate section so the rotation stays clean — bring them back any time the same way.</div>
+        </div>
+      </div>
+      <div class="help-tip"><strong>Tip:</strong> Swap multiple players at once — tap two on court and two on the bench, then hit Substitute to make both changes in one go.</div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="help-section">
+      <div class="help-tag">Step 3</div>
+      <div class="help-heading">After the game</div>
+      <div class="help-intro">Pause the clock, tap End Game, and everything is saved to Game History.</div>
+
+      <div class="help-phone-wrap">
+        <div class="help-phone">
+          <div class="help-phone-shell">
+            <div class="help-phone-notch"></div>
+            <div class="hm-header">
+              <div class="hm-wordmark">
+                <svg width="11" height="11" viewBox="0 0 100 100"><circle cx="50" cy="54.7" r="36" fill="none" stroke="#f5f3ef" stroke-width="5.5"/><line x1="40" y1="10" x2="60" y2="10" stroke="#f5f3ef" stroke-width="5.5" stroke-linecap="round"/><line x1="50" y1="54.7" x2="50" y2="30.9" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/><line x1="50" y1="54.7" x2="68" y2="54.7" stroke="#ff8a3d" stroke-width="5.5" stroke-linecap="round"/></svg>
+                Rotation<span class="hq">HQ</span>
+              </div>
+            </div>
+            <div class="hm-clock">
+              <div>
+                <div class="hm-clock-lbl">Game Clock</div>
+                <div class="hm-clock-time">32:14</div>
+              </div>
+              <div class="hm-btn ghost">Resume</div>
+            </div>
+            <div class="hm-btn warn" style="display:block;width:100%;text-align:center;margin-bottom:8px;">End Game</div>
+            <div class="hm-label">Game History</div>
+            <div style="background:#1e2227;border:1px solid #343a42;border-radius:8px;padding:8px;margin-bottom:5px;">
+              <div style="font-size:10px;font-weight:700;color:#f5f3ef;margin-bottom:5px;">vs Eagles — Round 4</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
+                <div style="background:#262b32;border-radius:5px;padding:4px 5px;">
+                  <div style="font-size:7px;color:#8a8f98;">Most minutes</div>
+                  <div style="font-size:9px;font-weight:700;color:#f5f3ef;">Riley K. — 18:22</div>
+                </div>
+                <div style="background:#262b32;border-radius:5px;padding:4px 5px;">
+                  <div style="font-size:7px;color:#8a8f98;">Fewest minutes</div>
+                  <div style="font-size:9px;font-weight:700;color:#f5f3ef;">Casey B. — 8:04</div>
+                </div>
+              </div>
+            </div>
+            <div style="border-top:1px solid #343a42;padding-top:5px;margin-bottom:6px;">
+              <div style="font-size:7px;color:#8a8f98;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px;">Sub Log</div>
+              <div style="display:flex;gap:5px;align-items:flex-start;">
+                <div style="font-family:monospace;font-size:8px;color:#ff8a3d;width:28px;flex-shrink:0;">8:14</div>
+                <div style="font-size:8px;color:#f5f3ef;"><span style="color:#8fd14f;">IN</span> Casey B.<br><span style="color:#e8574f;">OUT</span> Jordan M.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:5px;">
+              <div class="hm-btn ghost" style="flex:1;text-align:center;">PDF</div>
+              <div class="hm-btn ghost" style="flex:1;text-align:center;">Share</div>
+            </div>
+            <!-- I → End Game button -->
+            <div class="help-ann" style="top:46px; right:-9px;">I</div>
+            <!-- J → Game History card -->
+            <div class="help-ann" style="top:92px; right:-9px;">J</div>
+            <!-- K → PDF / Share buttons -->
+            <div class="help-ann" style="bottom:6px; right:-9px;">K</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="help-callout">
+        <div class="help-dot">I</div>
+        <div>
+          <div class="help-callout-title">End Game</div>
+          <div class="help-callout-desc">Pause the clock first, then tap End Game. Confirm the game name before saving. Can't be undone — but everything's logged before this point.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">J</div>
+        <div>
+          <div class="help-callout-title">Game summary</div>
+          <div class="help-callout-desc">Tap any saved game in Game History to see every player's total court time and a full substitution log with timestamps.</div>
+        </div>
+      </div>
+      <div class="help-callout">
+        <div class="help-dot">K</div>
+        <div>
+          <div class="help-callout-title">Share or save as PDF</div>
+          <div class="help-callout-desc">PDF opens your phone's print menu — choose "Save as PDF" for a clean report. Share copies a link anyone can open in a browser without needing the app.</div>
+        </div>
+      </div>
+      <div class="help-tip"><strong>Tip:</strong> The ⚙ settings icon lets you export your roster to send to an assistant coach, or import a game history file they've sent back.</div>
+    </div>
+
+    <div class="help-footer">Questions or feedback? Reach out to your coach.</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="menuBackdrop" class="menu-backdrop"></div>
+
+  <div id="settingsPanel" class="settings-panel">
+    <div class="settings-header">
+      Settings
+      <button type="button" id="settingsClose" class="settings-close">&times;</button>
+    </div>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Fatigue Tracker</div>
+        <div class="settings-sub">Show energy bar on each player card</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="settingFatigueEnabled" checked />
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+
+    <div class="settings-row" id="settingFatigueTimeRow">
+      <div>
+        <div class="settings-label">Max Energy Time</div>
+        <div class="settings-sub">Minutes of play to reach full fatigue</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <input type="number" id="settingFatigueMinutes" class="settings-minutes-input" min="1" max="30" value="7" inputmode="numeric" />
+        <span class="settings-minutes-suffix">min</span>
+      </div>
+    </div>
+
+    <div class="settings-section-label">Team Roster</div>
+    <div class="settings-row settings-row-stack">
+      <div class="settings-sub" style="margin:0;">Send today's lineup to an assistant coach, or load one they've sent you. Order is kept exactly as arranged.</div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost btn-sm" id="exportTeamBtn">Export</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="importTeamBtn">Import</button>
+      </div>
+    </div>
+
+    <div class="settings-section-label">Game History</div>
+    <div class="settings-row settings-row-stack">
+      <div class="settings-sub" style="margin:0;">Pick saved games to share, or bring in games sent from another device. Imported games are merged in, not replaced.</div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost btn-sm" id="exportHistoryBtn">Export</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="importHistoryBtn">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="importTeamFile" accept="application/json,.json" class="hidden" />
+  <input type="file" id="importHistoryFile" accept="application/json,.json" class="hidden" />
+
+  <div id="playerMenu" class="player-menu">
+    <div class="player-menu-header" id="menuHeader"></div>
+    <div id="playerMenuActions">
+      <button type="button" class="player-menu-item" id="menuEditPlayer">Edit Player</button>
+      <button type="button" class="player-menu-item" id="menuToggleRotation"></button>
+      <button type="button" class="player-menu-item cancel" id="menuCancel">Cancel</button>
+    </div>
+    <div id="playerMenuEdit" class="player-menu-edit hidden">
+      <div class="add-player-row">
+        <input type="text" id="menuEditNumber" class="number-input" placeholder="#" maxlength="2" inputmode="numeric" autocomplete="off" />
+        <input type="text" id="menuEditName" placeholder="Player name" maxlength="18" autocomplete="off" />
+      </div>
+      <select id="menuEditCategory" class="cat-select">
+        <option value="">No Position</option>
+        <optgroup label="Beginner — by height">
+          <option value="tall">Tall</option>
+          <option value="short">Short</option>
+        </optgroup>
+        <optgroup label="Advanced — by position">
+          <option value="centre">Centre</option>
+          <option value="forward">Forward</option>
+          <option value="sg">Shooting Guard (SG)</option>
+          <option value="pg">Point Guard (PG)</option>
+        </optgroup>
+      </select>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" id="menuEditCancel">Cancel</button>
+        <button type="button" class="btn btn-accent" id="menuEditSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="endGameModal" class="player-menu">
+    <div class="player-menu-header">End Game?</div>
+    <div class="player-menu-edit">
+      <p class="hint" style="margin: 0 0 12px;">This saves the game to history. You won't be able to resume play after this.</p>
+      <input type="text" id="endGameNameInput" placeholder="e.g. vs Eagles — Round 4" maxlength="40" autocomplete="off" />
+      <div class="btn-row" style="margin-top: 10px;">
+        <button type="button" class="btn btn-ghost" id="endGameCancelBtn">Cancel</button>
+        <button type="button" class="btn btn-warn" id="endGameSaveBtn">End &amp; Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- State ----------
+    const TEAM_STORAGE_KEY = 'benchBossTeam';
+    const SETTINGS_STORAGE_KEY = 'benchBossSettings';
+    const HISTORY_STORAGE_KEY = 'benchBossGameHistory';
+
+    // player position/category — '' means no position assigned
+    const CAT_OPTIONS = ['', 'tall', 'short', 'centre', 'forward', 'sg', 'pg'];
+    const CAT_LABEL = { '': 'None', tall: 'Tall', short: 'Short', centre: 'Centre', forward: 'Forward', sg: 'SG', pg: 'PG' };
+    const CAT_LEGACY_MAP = { sf: 'forward', pf: 'forward' }; // SF/PF were merged into a single Forward option
+
+    function normalizeCategory(cat) {
+      if (CAT_OPTIONS.includes(cat)) return cat;
+      if (CAT_LEGACY_MAP[cat]) return CAT_LEGACY_MAP[cat];
+      return '';
+    }
+
+    // ---------- Settings ----------
+    let settings = {
+      fatigueEnabled: true,
+      fatigueMinutes: 7,
+    };
+
+    function saveSettings() {
+      try { localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.fatigueEnabled === 'boolean') settings.fatigueEnabled = parsed.fatigueEnabled;
+        if (typeof parsed.fatigueMinutes === 'number' && parsed.fatigueMinutes >= 1 && parsed.fatigueMinutes <= 30) {
+          settings.fatigueMinutes = parsed.fatigueMinutes;
+        }
+      } catch (e) {}
+    }
+
+    function getEnergyMaxMs() {
+      return settings.fatigueMinutes * 60 * 1000;
+    }
+
+    function applySettingsToUI() {
+      $('settingFatigueEnabled').checked = settings.fatigueEnabled;
+      $('settingFatigueMinutes').value = settings.fatigueMinutes;
+      $('settingFatigueTimeRow').style.opacity = settings.fatigueEnabled ? '1' : '0.4';
+      $('settingFatigueTimeRow').style.pointerEvents = settings.fatigueEnabled ? 'auto' : 'none';
+    }
+    let team = [];           // { id, name, number, category, active, outOfRotation } — persisted roster — category is one of CAT_OPTIONS
+    let players = [];      // { id, name, number, category, outOfRotation, subCount } — this game's roster
+    let onCourt = [];       // array of player ids, length 5
+    let bench = [];          // array of player ids, ordered (next up first)
+    let selectedCourt = new Set(); // ids of on-court players checked for substitution
+    let selectedBench = new Set(); // ids of bench players checked for substitution
+    let pendingOverride = false;   // true once "Accept Anyway" is awaiting a second tap
+    let animateBench = false;      // true for exactly one renderGame() call after a sub
+    let history = [];        // stack of snapshots for undo
+    let nextId = 1;
+
+    // game clock — accumulated ms + timestamp the current running segment started (null if paused)
+    let trackingActive = false;
+    let gameElapsedMs = 0;
+    let gameSegmentStart = null;
+    let gameStarted = false;   // true once the clock has been started at least once this game
+    let gameStartedAt = null;  // wall-clock timestamp when Start Game was pressed
+    let gameName = '';         // optional name set on the setup screen, carried through to End Game
+
+    // game history — saved past games and the chronological sub log for the current game
+    let gameHistory = []; // [{ id, name, date, durationMs, players: [...], events: [...] }]
+    let subLog = [];      // [{ type:'start', gameTimeMs:0, in:[...] } | { type:'sub', gameTimeMs, out:[...], in:[...] }]
+    let historySelecting = false;       // true while picking specific saved games to export
+    let selectedHistoryIds = new Set(); // ids of games currently ticked for export
+
+    // ---------- Helpers ----------
+    const $ = (id) => document.getElementById(id);
+
+    function esc(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // ---------- Game clock helpers ----------
+    function formatTime(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function getGameElapsedMs() {
+      return gameElapsedMs + (trackingActive && gameSegmentStart != null ? Date.now() - gameSegmentStart : 0);
+    }
+
+    function getPlayerOnCourtMs(p) {
+      return p.onCourtMs + (p.stintStart != null ? Date.now() - p.stintStart : 0);
+    }
+
+    // ---------- Energy bar ----------
+    // Fills (green -> red) over N min of continuous on-court time while the
+    // clock runs, and drains back to empty over N min of rest (bench, or
+    // on-court while the clock is paused). Stored as a snapshot value +
+    // anchor timestamp so it stays accurate even if the screen sleeps.
+
+    function getPlayerEnergyMs(p, now = Date.now()) {
+      const elapsed = now - p.energyAnchorTime;
+      const value = p.energyCharging ? p.energyMs + elapsed : p.energyMs - elapsed;
+      return Math.min(getEnergyMaxMs(), Math.max(0, value));
+    }
+
+    // call whenever a player's charging/draining state changes (sub in/out, clock start/pause)
+    function reanchorEnergy(p, now, newCharging) {
+      p.energyMs = getPlayerEnergyMs(p, now);
+      p.energyAnchorTime = now;
+      p.energyCharging = newCharging;
+    }
+
+    function energyColor(pct) {
+      const hue = Math.round(120 * (1 - pct / 100)); // 120 = green, 60 = yellow, 0 = red
+      return `hsl(${hue}, 70%, 50%)`;
+    }
+
+    // lightweight per-second refresh — only touches text content/styles so it never
+    // disrupts an in-progress drag, selection, or open menu
+    function updateTimeDisplays() {
+      const clockEl = $('gameClockTime');
+      if (clockEl) clockEl.textContent = formatTime(getGameElapsedMs());
+
+      document.querySelectorAll('#courtList .card[data-id], #benchList .card[data-id], #gameOutList .card[data-id]').forEach(card => {
+        const id = Number(card.dataset.id);
+        const p = players.find(p => p.id === id);
+        if (!p) return;
+        const timeEl = card.querySelector('.player-time');
+        if (timeEl) timeEl.textContent = formatTime(getPlayerOnCourtMs(p));
+
+        const fillEl = card.querySelector('.energy-fill');
+        if (fillEl) {
+          const bar = fillEl.closest('.energy-bar');
+          if (!settings.fatigueEnabled) {
+            if (bar) bar.style.display = 'none';
+            return;
+          }
+          if (bar) bar.style.display = '';
+          const pct = Math.round((getPlayerEnergyMs(p) / getEnergyMaxMs()) * 100);
+          fillEl.style.height = pct + '%';
+          fillEl.style.background = energyColor(pct);
+          if (bar) bar.title = `Energy ${pct}%`;
+        }
+      });
+    }
+
+    function toggleClock() {
+      const now = Date.now();
+      if (trackingActive) {
+        onCourt.forEach(id => {
+          const p = players.find(p => p.id === id);
+          if (p.stintStart != null) {
+            p.onCourtMs += now - p.stintStart;
+            p.stintStart = null;
+          }
+          reanchorEnergy(p, now, false); // clock paused — start resting
+        });
+        gameElapsedMs += gameSegmentStart != null ? now - gameSegmentStart : 0;
+        gameSegmentStart = null;
+        trackingActive = false;
+      } else {
+        onCourt.forEach(id => {
+          const p = players.find(p => p.id === id);
+          p.stintStart = now;
+          reanchorEnergy(p, now, true); // clock running — start charging
+        });
+        gameSegmentStart = now;
+        trackingActive = true;
+        gameStarted = true;
+      }
+      renderGame();
+    }
+
+    // snapshot of a player's identity + state at this exact moment, for the substitution log
+    function snapshotPlayer(id) {
+      const p = players.find(p => p.id === id);
+      if (!p) return { id, name: '?', number: '', energyPct: 0, onCourtMs: 0 };
+      return {
+        id: p.id,
+        name: p.name,
+        number: p.number || '',
+        energyPct: Math.round((getPlayerEnergyMs(p) / getEnergyMaxMs()) * 100),
+        onCourtMs: getPlayerOnCourtMs(p),
+      };
+    }
+
+    const gripIcon = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+    const checkIcon = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    const chevronIcon = '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+    let toastTimeout;
+    function showToast(msg, type) {
+      const toast = $('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show ' + type;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    // ---------- Persistent team roster ----------
+    function saveTeam() {
+      try {
+        localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(team));
+      } catch (e) {
+        // storage unavailable — team just won't persist between sessions
+      }
+    }
+
+    function loadTeam() {
+      try {
+        const raw = localStorage.getItem(TEAM_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return;
+        team = parsed
+          .filter(p => p && typeof p.id === 'number' && typeof p.name === 'string')
+          .map(p => ({
+            id: p.id,
+            name: p.name,
+            number: typeof p.number === 'string' ? p.number : '',
+            category: normalizeCategory(p.category),
+            active: !!p.active,
+            outOfRotation: !!p.outOfRotation,
+          }));
+        nextId = team.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+      } catch (e) {
+        team = [];
+      }
+    }
+
+    // ---------- Persistent game history ----------
+    const MAX_SAVED_GAMES = 50;
+
+    function saveHistory() {
+      try {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(gameHistory));
+      } catch (e) {
+        // storage unavailable — saved games just won't persist between sessions
+      }
+    }
+
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) gameHistory = parsed;
+      } catch (e) {
+        gameHistory = [];
+      }
+    }
+
+    // ---------- Undo ----------
+    function snapshot() {
+      return {
+        players: players.map(p => ({ ...p })),
+        onCourt: onCourt.slice(),
+        bench: bench.slice(),
+        selectedCourt: Array.from(selectedCourt),
+        selectedBench: Array.from(selectedBench),
+      };
+    }
+
+    function pushHistory() {
+      history.push(snapshot());
+      if (history.length > 50) history.shift();
+    }
+
+    function undo() {
+      if (history.length === 0) return;
+      const prev = history.pop();
+      players = prev.players;
+      onCourt = prev.onCourt;
+      bench = prev.bench;
+      selectedCourt = new Set(prev.selectedCourt);
+      selectedBench = new Set(prev.selectedBench);
+      pendingOverride = false;
+      showToast('Undone', 'success');
+      renderGame();
+    }
+
+    // ---------- Generic drag-to-reorder ----------
+    // ---------- Setup list drag (DOM-lifting so bench label tracks live) ----------
+    // Uses onpointerdown (not addEventListener) so repeated renderSetup calls
+    // never stack up multiple listeners.
+    function enableSetupListDrag(listEl, onReorder) {
+      listEl.onpointerdown = (e) => {
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        const dragCard = handle.closest('.card');
+        if (!dragCard || dragCard.parentElement !== listEl) return;
+        e.preventDefault();
+
+        const cardRect = dragCard.getBoundingClientRect();
+        const cardW = listEl.offsetWidth;
+
+        // Leave a dashed placeholder where the card was
+        const placeholder = document.createElement('div');
+        placeholder.className = 'drag-placeholder';
+        placeholder.style.height = cardRect.height + 'px';
+        listEl.insertBefore(placeholder, dragCard);
+
+        // Lift the card to fixed position
+        dragCard.classList.add('dragging');
+        const startTop = cardRect.top;
+        dragCard.style.cssText = `position:fixed;top:${startTop}px;left:${cardRect.left}px;width:${cardW}px;z-index:200;margin:0;pointer-events:none;`;
+
+        const startY = e.clientY;
+
+        // Always keeps the bench label after the 5th slot (card or placeholder)
+        const syncBenchLabel = () => {
+          const benchLabel = document.getElementById('rosterBenchLabel');
+          if (!benchLabel) return;
+          const slots = Array.from(listEl.children).filter(el =>
+            (el.classList.contains('card') && el !== dragCard) ||
+            el.classList.contains('drag-placeholder')
+          );
+          if (slots.length >= 5 && slots[4].nextSibling !== benchLabel) {
+            slots[4].after(benchLabel);
+          }
+        };
+
+        const onMove = (ev) => {
+          dragCard.style.top = (startTop + ev.clientY - startY) + 'px';
+
+          // Reorder placeholder among non-dragged, non-label siblings
+          const siblings = Array.from(listEl.children).filter(el =>
+            el !== placeholder && el !== dragCard && el.id !== 'rosterBenchLabel'
+          );
+          let insertBefore = null;
+          for (const sib of siblings) {
+            const r = sib.getBoundingClientRect();
+            if (ev.clientY < r.top + r.height / 2) { insertBefore = sib; break; }
+          }
+          if (insertBefore) listEl.insertBefore(placeholder, insertBefore);
+          else listEl.appendChild(placeholder);
+
+          syncBenchLabel();
+        };
+
+        const onUp = () => {
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          dragCard.style.cssText = '';
+          dragCard.classList.remove('dragging');
+          listEl.insertBefore(dragCard, placeholder);
+          placeholder.remove();
+          const newOrder = Array.from(listEl.querySelectorAll(':scope > .card'))
+            .map(el => Number(el.dataset.id));
+          onReorder(newOrder);
+        };
+
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+      };
+    }
+
+    function enableDragReorder(listEl, ids, onReorder) {
+      const elements = Array.from(listEl.querySelectorAll(':scope > .card'));
+      elements.forEach((el, idx) => {
+        const handle = el.querySelector('.drag-handle');
+        if (!handle) return;
+
+        handle.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          const startY = e.clientY;
+          const itemHeight = el.offsetHeight + 8; // card height + gap
+          const originalIndex = idx;
+          let currentIndex = idx;
+
+          el.classList.add('dragging');
+          el.style.position = 'relative';
+          el.style.zIndex = '50';
+
+          const onMove = (ev) => {
+            const deltaY = ev.clientY - startY;
+            el.style.transform = `translateY(${deltaY}px)`;
+
+            let newIndex = originalIndex + Math.round(deltaY / itemHeight);
+            newIndex = Math.max(0, Math.min(elements.length - 1, newIndex));
+
+            if (newIndex !== currentIndex) {
+              const arr = ids.slice();
+              const draggedId = arr[originalIndex];
+              arr.splice(originalIndex, 1);
+              arr.splice(newIndex, 0, draggedId);
+              currentIndex = newIndex;
+
+              elements.forEach((other, oIdx) => {
+                if (other === el) return;
+                const otherId = ids[oIdx];
+                const newPos = arr.indexOf(otherId);
+                const diff = newPos - oIdx;
+                other.style.transition = 'transform 0.15s ease';
+                other.style.transform = diff === 0 ? '' : `translateY(${diff * itemHeight}px)`;
+              });
+
+              ids.__current = arr;
+            }
+          };
+
+          const onUp = () => {
+            document.removeEventListener('pointermove', onMove);
+            document.removeEventListener('pointerup', onUp);
+            el.classList.remove('dragging');
+            el.style.transform = '';
+            el.style.zIndex = '';
+            el.style.position = '';
+            elements.forEach((other) => { other.style.transform = ''; other.style.transition = ''; });
+
+            if (currentIndex !== originalIndex && ids.__current) {
+              onReorder(ids.__current);
+            }
+          };
+
+          document.addEventListener('pointermove', onMove);
+          document.addEventListener('pointerup', onUp);
+        }, { passive: false });
+      });
+    }
+
+    // ---------- Long press ----------
+    const LONG_PRESS_MS = 500;
+    const LONG_PRESS_MOVE_TOLERANCE = 10;
+
+    function enableLongPress(container, selector, onLongPress) {
+      container.querySelectorAll(selector).forEach(el => {
+        const card = el.closest('.card');
+        let timer = null;
+        let longPressed = false;
+        let startX = 0;
+        let startY = 0;
+
+        const cancel = () => {
+          clearTimeout(timer);
+          timer = null;
+          if (card) card.classList.remove('pressing');
+        };
+
+        el.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          longPressed = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          if (card) card.classList.add('pressing');
+          timer = setTimeout(() => {
+            longPressed = true;
+            if (card) card.classList.remove('pressing');
+            onLongPress(el);
+          }, LONG_PRESS_MS);
+        });
+
+        el.addEventListener('pointermove', (e) => {
+          if (!timer) return;
+          if (Math.abs(e.clientX - startX) > LONG_PRESS_MOVE_TOLERANCE || Math.abs(e.clientY - startY) > LONG_PRESS_MOVE_TOLERANCE) {
+            cancel();
+          }
+        });
+
+        el.addEventListener('pointerup', cancel);
+        el.addEventListener('pointercancel', cancel);
+        el.addEventListener('pointerleave', cancel);
+
+        // a long press shouldn't also register as a tap (e.g. selection toggle)
+        el.addEventListener('click', (e) => {
+          if (longPressed) {
+            e.preventDefault();
+            e.stopPropagation();
+            longPressed = false;
+          }
+        });
+      });
+    }
+
+    // ---------- Player context menu ----------
+    let menuTargetId = null;
+    let menuContext = null; // 'team' | 'game'
+
+    function getMenuPlayer() {
+      if (menuTargetId === null) return null;
+      return menuContext === 'team'
+        ? team.find(p => p.id === menuTargetId)
+        : players.find(p => p.id === menuTargetId);
+    }
+
+    function openPlayerMenu(id, context) {
+      const p = context === 'team'
+        ? team.find(p => p.id === id)
+        : players.find(p => p.id === id);
+      if (!p) return;
+
+      menuTargetId = id;
+      menuContext = context;
+
+      $('menuHeader').textContent = p.number ? `#${p.number}  ${p.name}` : p.name;
+
+      $('menuToggleRotation').textContent = p.outOfRotation
+        ? 'Return to rotation'
+        : 'Remove from rotation (injured, etc.)';
+      $('menuToggleRotation').classList.toggle('warn', !p.outOfRotation);
+
+      $('playerMenuActions').classList.remove('hidden');
+      $('playerMenuEdit').classList.add('hidden');
+
+      $('menuBackdrop').classList.add('show');
+      $('playerMenu').classList.add('show');
+    }
+
+    function closePlayerMenu() {
+      $('menuBackdrop').classList.remove('show');
+      $('playerMenu').classList.remove('show');
+      menuTargetId = null;
+      menuContext = null;
+    }
+
+    function openPlayerEditForm(p) {
+      $('menuEditNumber').value = p.number || '';
+      $('menuEditName').value = p.name;
+      $('menuEditCategory').value = normalizeCategory(p.category);
+      $('playerMenuActions').classList.add('hidden');
+      $('playerMenuEdit').classList.remove('hidden');
+      $('menuEditName').focus();
+    }
+
+    // ---------- Setup screen ----------
+    function rosterCardHtml(p, isActive) {
+      const withHandle = isActive && !p.outOfRotation;
+      const dimmed = !isActive || p.outOfRotation;
+      const catBadge = p.category ? `<span class="cat-badge">${CAT_LABEL[p.category] || p.category}</span>` : '';
+      return `
+        <div class="card ${dimmed ? 'inactive' : ''}" data-id="${p.id}">
+          ${withHandle ? `<div class="drag-handle">${gripIcon}</div>` : ''}
+          <button type="button" class="active-toggle ${isActive ? 'checked' : ''}" data-action="toggleActive" data-id="${p.id}">${checkIcon}</button>
+          <div class="jersey-number ${p.number ? '' : 'empty'}">${p.number ? esc(p.number) : '–'}</div>
+          <div class="player-info">
+            <div class="player-name">${esc(p.name)}</div>
+            ${catBadge}
+          </div>
+          <button type="button" class="remove-btn" data-action="remove" data-id="${p.id}">&times;</button>
+        </div>
+      `;
+    }
+
+    function renderSetup() {
+      const active = team.filter(p => p.active);
+      const rotation = active.filter(p => !p.outOfRotation);
+      const outOfRotation = active.filter(p => p.outOfRotation);
+      const inactive = team.filter(p => !p.active);
+
+      $('rosterCount').textContent = `${active.length} / 12 playing today`;
+
+      const activeList = $('activeList');
+
+      // Render all rotation players, injecting the bench label after position 5
+      const cards = rotation.map(p => rosterCardHtml(p, true));
+      if (rotation.length >= 5) {
+        cards.splice(5, 0, `<div id="rosterBenchLabel" class="bench-section-label" style="margin-top:6px;">Bench</div>`);
+      }
+      activeList.innerHTML = cards.join('');
+
+      const outList = $('outOfRotationList');
+      const outLabel = $('outOfRotationLabel');
+      if (outOfRotation.length > 0) {
+        outLabel.classList.remove('hidden');
+        outList.innerHTML = outOfRotation.map(p => rosterCardHtml(p, true)).join('');
+      } else {
+        outLabel.classList.add('hidden');
+        outList.innerHTML = '';
+      }
+
+      const inactiveList = $('inactiveList');
+      const inactiveLabel = $('inactiveLabel');
+      if (inactive.length > 0) {
+        inactiveLabel.classList.remove('hidden');
+        inactiveList.innerHTML = inactive.map(p => rosterCardHtml(p, false)).join('');
+      } else {
+        inactiveLabel.classList.add('hidden');
+        inactiveList.innerHTML = '';
+      }
+
+      // attach listeners
+      [activeList, outList, inactiveList].forEach(list => {
+        list.querySelectorAll('[data-action="remove"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = Number(btn.dataset.id);
+            team = team.filter(p => p.id !== id);
+            saveTeam();
+            renderSetup();
+          });
+        });
+        list.querySelectorAll('[data-action="toggleActive"]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = Number(btn.dataset.id);
+            const p = team.find(p => p.id === id);
+            if (!p.active && active.length >= 12) {
+              showToast("12/12 selected — sit someone out first", 'error');
+              return;
+            }
+            team = team.filter(t => t.id !== id);
+            p.active = !p.active;
+            if (p.active) {
+              let lastActiveIdx = -1;
+              team.forEach((t, i) => { if (t.active) lastActiveIdx = i; });
+              team.splice(lastActiveIdx + 1, 0, p);
+            } else {
+              team.push(p);
+            }
+            saveTeam();
+            renderSetup();
+          });
+        });
+        enableLongPress(list, '.player-info', (el) => {
+          const id = Number(el.closest('.card').dataset.id);
+          openPlayerMenu(id, 'team');
+        });
+      });
+
+      // drag-to-reorder: DOM-lifting approach so the bench label tracks live
+      if (rotation.length > 0) {
+        enableSetupListDrag(activeList, (newOrder) => {
+          const outIds = new Set(outOfRotation.map(p => p.id));
+          const inactiveIds = new Set(inactive.map(p => p.id));
+          team = [
+            ...newOrder.map(id => team.find(p => p.id === id)),
+            ...team.filter(p => outIds.has(p.id)),
+            ...team.filter(p => inactiveIds.has(p.id)),
+          ];
+          saveTeam();
+          renderSetup();
+        });
+      }
+
+      // start button state
+      const startBtn = $('startBtn');
+      const startHint = $('startHint');
+      if (rotation.length >= 5) {
+        startBtn.disabled = false;
+        startHint.textContent = rotation.length > 5
+          ? 'Drag to reorder — top 5 start on court, the rest start on the bench.'
+          : 'These 5 will start on the court.';
+      } else {
+        startBtn.disabled = true;
+        startHint.textContent = `Select at least ${5 - rotation.length} more player${5 - rotation.length === 1 ? '' : 's'} in rotation to start.`;
+      }
+    }
+
+    // ---------- Game screen ----------
+    function playerCardHtml(p, zone, withHandle) {
+      const selSet = zone === 'court' ? selectedCourt : selectedBench;
+      const isSelected = selSet.has(p.id);
+      const isOut = p.outOfRotation;
+      const catBadge = p.category ? `<span class="cat-badge">${CAT_LABEL[p.category] || p.category}</span>` : '';
+      const subsLine = p.subCount === 1 ? '1 SUB' : `${p.subCount} SUBS`;
+      const energyPct = Math.round((getPlayerEnergyMs(p) / getEnergyMaxMs()) * 100);
+      const energyBar = `
+        <div class="energy-bar" title="Energy ${energyPct}%" style="${settings.fatigueEnabled ? '' : 'display:none;'}">
+          <div class="energy-fill" style="height:${energyPct}%; background:${energyColor(energyPct)};"></div>
+        </div>
+      `;
+      const statsHtml = `
+        <div class="sub-counter">
+          <span class="player-time">${formatTime(getPlayerOnCourtMs(p))}</span>
+          <span class="subs-line">${subsLine}</span>
+        </div>
+      `;
+
+      // bench players marked "out of rotation" get a slimmer, non-selectable card
+      if (zone === 'bench' && isOut) {
+        return `
+          <div class="card inactive" data-id="${p.id}">
+            <div class="jersey-number ${p.number ? '' : 'empty'}">${p.number ? esc(p.number) : '–'}</div>
+            <div class="player-info">
+              <div class="player-name">${esc(p.name)}</div>
+              ${catBadge}
+            </div>
+            ${energyBar}
+            ${statsHtml}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="card selectable ${isSelected ? 'selected' : ''}" data-id="${p.id}" data-zone="${zone}">
+          ${withHandle ? `<div class="drag-handle">${gripIcon}</div>` : ''}
+          <div class="active-toggle select-toggle ${isSelected ? 'checked' : ''}">${checkIcon}</div>
+          <div class="jersey-number ${p.number ? '' : 'empty'}">${p.number ? esc(p.number) : '–'}</div>
+          <div class="player-info">
+            <div class="player-name">${esc(p.name)}</div>
+            ${catBadge}
+          </div>
+          ${energyBar}
+          ${statsHtml}
+        </div>
+      `;
+    }
+
+    function renderGame() {
+      const courtList = $('courtList');
+      const benchList = $('benchList');
+      const outList = $('gameOutList');
+      const outLabel = $('gameOutLabel');
+
+      const benchRotation = bench.filter(id => !players.find(p => p.id === id).outOfRotation);
+      const benchOut = bench.filter(id => players.find(p => p.id === id).outOfRotation);
+
+      // FLIP: snapshot bench AND court card positions BEFORE the DOM changes
+      const prevBenchTops = {};
+      const prevCourtTops = {};
+      if (animateBench) {
+        benchList.querySelectorAll('.card').forEach(card => {
+          prevBenchTops[card.dataset.id] = card.getBoundingClientRect().top;
+        });
+        courtList.querySelectorAll('.card').forEach(card => {
+          prevCourtTops[card.dataset.id] = card.getBoundingClientRect().top;
+        });
+      }
+
+      const courtIndicator = onCourt.length > 0
+        ? `<div class="next-indicator">${chevronIcon} Next Sub Out</div>`
+        : '';
+      courtList.innerHTML = courtIndicator + onCourt.map(id => {
+        const p = players.find(p => p.id === id);
+        return playerCardHtml(p, 'court', true);
+      }).join('');
+
+      const benchIndicator = benchRotation.length > 0
+        ? `<div class="next-indicator">${chevronIcon} Next Sub In</div>`
+        : '';
+      benchList.innerHTML = benchIndicator + benchRotation.map(id => {
+        const p = players.find(p => p.id === id);
+        return playerCardHtml(p, 'bench', true);
+      }).join('');
+
+      // FLIP: animate each card from where it WAS to where it IS now
+      if (animateBench) {
+        animateBench = false;
+        const flipList = [
+          [benchList, prevBenchTops],
+          [courtList, prevCourtTops],
+        ];
+        flipList.forEach(([listEl, prevTops]) => {
+          listEl.querySelectorAll('.card').forEach(card => {
+            const prevTop = prevTops[card.dataset.id];
+            if (prevTop === undefined) return; // new card, no previous position
+            const newTop = card.getBoundingClientRect().top;
+            const deltaY = prevTop - newTop;
+            if (Math.abs(deltaY) < 2) return; // didn't move, skip
+            card.style.transition = 'none';
+            card.style.transform = `translateY(${deltaY}px)`;
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                card.style.transition = 'transform 0.65s cubic-bezier(0.22, 1, 0.36, 1)';
+                card.style.transform = '';
+              });
+            });
+          });
+        });
+      }
+
+      if (benchOut.length > 0) {
+        outLabel.classList.remove('hidden');
+        outList.innerHTML = benchOut.map(id => {
+          const p = players.find(p => p.id === id);
+          return playerCardHtml(p, 'bench', false);
+        }).join('');
+      } else {
+        outLabel.classList.add('hidden');
+        outList.innerHTML = '';
+      }
+
+      // tap to check/uncheck for substitution
+      [courtList, benchList].forEach(listEl => {
+        listEl.querySelectorAll('.card').forEach(card => {
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.drag-handle')) return;
+            const id = Number(card.dataset.id);
+            const zone = card.dataset.zone;
+            const set = zone === 'court' ? selectedCourt : selectedBench;
+            if (set.has(id)) set.delete(id); else set.add(id);
+            pendingOverride = false;
+            renderGame();
+          });
+        });
+      });
+
+      // hold a bench player's name/badge to open the height / rotation menu
+      [benchList, outList].forEach(listEl => {
+        enableLongPress(listEl, '.player-info', (el) => {
+          const id = Number(el.closest('.card').dataset.id);
+          openPlayerMenu(id, 'game');
+        });
+      });
+
+      // drag-to-reorder on court
+      enableDragReorder(courtList, onCourt.slice(), (newOrder) => {
+        pushHistory();
+        onCourt = newOrder;
+        renderGame();
+      });
+
+      // drag-to-reorder bench (rotation players only — "out" players stay put)
+      enableDragReorder(benchList, benchRotation.slice(), (newOrder) => {
+        pushHistory();
+        bench = [...newOrder, ...benchOut];
+        renderGame();
+      });
+
+      // game clock
+      $('gameClockTime').textContent = formatTime(getGameElapsedMs());
+      $('clockDot').style.display = trackingActive ? 'inline-block' : 'none';
+      const clockBtn = $('clockToggleBtn');
+      clockBtn.textContent = trackingActive ? 'Pause' : (gameStarted ? 'Resume' : 'Start');
+      clockBtn.classList.toggle('btn-accent', !trackingActive);
+      clockBtn.classList.toggle('btn-ghost', trackingActive);
+      $('endGameBtn').classList.toggle('hidden', trackingActive || !gameStarted);
+
+      // toolbar state
+      $('undoBtn').disabled = history.length === 0;
+
+      renderSubBar();
+    }
+
+    // ---------- Substitution ----------
+    function getSubValidation() {
+      if (selectedCourt.size === 0 && selectedBench.size === 0) {
+        return { visible: false };
+      }
+      if (selectedCourt.size === 0) {
+        return { visible: true, state: 'blocked', message: 'Select the bench player(s) coming in.' };
+      }
+      if (selectedBench.size === 0) {
+        return { visible: true, state: 'blocked', message: 'Select the on-court player(s) coming off.' };
+      }
+      if (selectedCourt.size !== selectedBench.size) {
+        return {
+          visible: true,
+          state: 'blocked',
+          message: `Select the same number on each side to keep 5 on court — ${selectedCourt.size} off vs ${selectedBench.size} on.`,
+        };
+      }
+
+      const courtCounts = {};
+      const benchCounts = {};
+      CAT_OPTIONS.forEach(cat => { courtCounts[cat] = 0; benchCounts[cat] = 0; });
+      selectedCourt.forEach(id => courtCounts[players.find(p => p.id === id).category]++);
+      selectedBench.forEach(id => benchCounts[players.find(p => p.id === id).category]++);
+
+      const mismatches = CAT_OPTIONS
+        .filter(cat => cat !== '' && courtCounts[cat] !== benchCounts[cat])
+        .map(cat => `${CAT_LABEL[cat]}: ${courtCounts[cat]} off, ${benchCounts[cat]} on`);
+
+      if (mismatches.length > 0) {
+        return { visible: true, state: 'warn', count: selectedCourt.size, message: mismatches.join('; ') };
+      }
+
+      return { visible: true, state: 'ok', count: selectedCourt.size };
+    }
+
+    function renderSubBar() {
+      const v = getSubValidation();
+      const bar = $('subBar');
+      const btn = $('subBtn');
+      const hint = $('subHint');
+
+      if (!v.visible) {
+        bar.classList.add('hidden');
+        pendingOverride = false;
+        return;
+      }
+      bar.classList.remove('hidden');
+      hint.classList.remove('warn');
+
+      if (v.state === 'blocked') {
+        pendingOverride = false;
+        btn.disabled = true;
+        btn.classList.remove('btn-warn');
+        btn.classList.add('btn-accent');
+        btn.textContent = 'Substitute';
+        hint.textContent = v.message;
+        hint.classList.remove('hidden');
+        return;
+      }
+
+      if (v.state === 'warn') {
+        btn.disabled = false;
+        if (pendingOverride) {
+          btn.classList.remove('btn-accent');
+          btn.classList.add('btn-warn');
+          btn.textContent = 'Accept Anyway';
+          hint.textContent = "These players aren't in the same height group — tap again to confirm.";
+        } else {
+          btn.classList.remove('btn-warn');
+          btn.classList.add('btn-accent');
+          btn.textContent = v.count === 1 ? 'Substitute' : `Substitute (${v.count})`;
+          hint.textContent = `Height groups don't match — ${v.message}.`;
+        }
+        hint.classList.add('warn');
+        hint.classList.remove('hidden');
+        return;
+      }
+
+      // ok
+      pendingOverride = false;
+      btn.disabled = false;
+      btn.classList.remove('btn-warn');
+      btn.classList.add('btn-accent');
+      btn.textContent = v.count === 1 ? 'Substitute' : `Substitute (${v.count})`;
+      hint.classList.add('hidden');
+    }
+
+    function performSubstitution() {
+      const v = getSubValidation();
+      if (v.state === 'blocked') return;
+
+      if (v.state === 'warn' && !pendingOverride) {
+        pendingOverride = true;
+        renderSubBar();
+        return;
+      }
+
+      pendingOverride = false;
+      pushHistory();
+
+      // preserve each group's current relative order
+      const outgoingCourt = onCourt.filter(id => selectedCourt.has(id));
+      const incomingBench = bench.filter(id => selectedBench.has(id));
+
+      // remove the selected players — everyone else shifts up to fill the gaps
+      onCourt = onCourt.filter(id => !selectedCourt.has(id));
+      bench = bench.filter(id => !selectedBench.has(id));
+
+      // the players moving over join the bottom of their new list
+      onCourt.push(...incomingBench);
+      bench.push(...outgoingCourt);
+
+      // only the player heading to the bench picks up a sub
+      const now = Date.now();
+      outgoingCourt.forEach(id => {
+        const p = players.find(p => p.id === id);
+        if (p.stintStart != null) {
+          p.onCourtMs += now - p.stintStart;
+          p.stintStart = null;
+        }
+        reanchorEnergy(p, now, false); // heading to the bench — start resting
+        p.subCount++;
+      });
+      incomingBench.forEach(id => {
+        const p = players.find(p => p.id === id);
+        if (trackingActive) p.stintStart = now;
+        reanchorEnergy(p, now, trackingActive); // on court now — charging only if clock running
+      });
+
+      subLog.push({
+        type: 'sub',
+        gameTimeMs: getGameElapsedMs(),
+        out: outgoingCourt.map(snapshotPlayer),
+        in: incomingBench.map(snapshotPlayer),
+      });
+
+      const n = selectedCourt.size;
+      selectedCourt.clear();
+      selectedBench.clear();
+
+      showToast(n === 1 ? 'Substitution made' : `${n} substitutions made`, 'success');
+      animateBench = true;
+      renderGame();
+    }
+
+    // ---------- Screen transitions ----------
+    function startGame() {
+      const activeTeam = team.filter(p => p.active);
+      const rotation = activeTeam.filter(p => !p.outOfRotation);
+      const outOfRotation = activeTeam.filter(p => p.outOfRotation);
+      const now = Date.now();
+      players = [...rotation, ...outOfRotation].map((p, idx) => ({
+        id: p.id,
+        name: p.name,
+        number: p.number || '',
+        category: p.category,
+        outOfRotation: !!p.outOfRotation,
+        subCount: idx < 5 ? 0 : 1, // starting on the bench counts as your first sub
+        onCourtMs: 0,
+        stintStart: null,
+        energyMs: 0,
+        energyAnchorTime: now,
+        energyCharging: false,
+      }));
+      onCourt = players.slice(0, 5).map(p => p.id);
+      bench = players.slice(5).map(p => p.id);
+      selectedCourt = new Set();
+      selectedBench = new Set();
+      pendingOverride = false;
+      history = [];
+      trackingActive = false;
+      gameElapsedMs = 0;
+      gameSegmentStart = null;
+      gameStarted = false;
+      gameStartedAt = now;
+      gameName = $('gameTitleInput').value.trim();
+      $('gameTitleInput').value = '';
+      subLog = [{ type: 'start', gameTimeMs: 0, in: onCourt.map(snapshotPlayer) }];
+      $('gameAddPlayer').classList.add('hidden');
+      $('gameNameInput').value = '';
+      $('gameNumberInput').value = '';
+      $('setupScreen').classList.add('hidden');
+      $('gameScreen').classList.remove('hidden');
+      $('tagline').textContent = 'Check players to swap, then hit Substitute. Drag to reorder, or Undo a mistake.';
+      renderGame();
+    }
+
+    function finishGameSession() {
+      const finalOrder = [...onCourt, ...bench];
+      const activeOrdered = finalOrder.map(id => {
+        const gp = players.find(p => p.id === id);
+        const existing = team.find(t => t.id === id);
+        return existing
+          ? { ...existing, name: gp.name, number: gp.number || '', category: gp.category, outOfRotation: !!gp.outOfRotation, active: true }
+          : { id, name: gp.name, number: gp.number || '', category: gp.category, outOfRotation: !!gp.outOfRotation, active: true };
+      });
+      const inactiveRemaining = team
+        .filter(t => !finalOrder.includes(t.id))
+        .map(t => ({ ...t, active: false }));
+      team = [...activeOrdered, ...inactiveRemaining];
+      saveTeam();
+
+      selectedCourt = new Set();
+      selectedBench = new Set();
+      pendingOverride = false;
+      history = [];
+      gameStarted = false;
+      gameStartedAt = null;
+      gameName = '';
+      subLog = [];
+      $('gameAddPlayer').classList.add('hidden');
+      $('gameNameInput').value = '';
+      $('gameNumberInput').value = '';
+      $('gameScreen').classList.add('hidden');
+      $('setupScreen').classList.remove('hidden');
+      $('tagline').textContent = "Select who's playing today, then drag to set your starting five.";
+      renderSetup();
+    }
+
+    function newGame() {
+      finishGameSession();
+    }
+
+    // ---------- Game history (save / view / delete) ----------
+    function openEndGameModal() {
+      $('endGameNameInput').value = gameName || '';
+      $('endGameModal').classList.add('show');
+      $('menuBackdrop').classList.add('show');
+      setTimeout(() => $('endGameNameInput').focus(), 50);
+    }
+
+    function closeEndGameModal() {
+      $('endGameModal').classList.remove('show');
+      $('menuBackdrop').classList.remove('show');
+    }
+
+    function confirmEndGame() {
+      const now = Date.now();
+      let name = $('endGameNameInput').value.trim();
+      if (!name) {
+        const d = new Date(gameStartedAt || now);
+        name = `Game — ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+      }
+
+      const summary = players.map(p => ({
+        id: p.id,
+        name: p.name,
+        number: p.number || '',
+        category: p.category,
+        outOfRotation: !!p.outOfRotation,
+        onCourtMs: getPlayerOnCourtMs(p),
+        subCount: p.subCount,
+      }));
+
+      const record = {
+        id: now,
+        name,
+        date: gameStartedAt || now,
+        durationMs: getGameElapsedMs(),
+        players: summary,
+        events: subLog,
+      };
+
+      gameHistory.unshift(record);
+      if (gameHistory.length > MAX_SAVED_GAMES) gameHistory.length = MAX_SAVED_GAMES;
+      saveHistory();
+
+      closeEndGameModal();
+      showToast('Game saved', 'success');
+      finishGameSession();
+    }
+
+    function numberedName(p) {
+      return p.number ? `#${p.number} ${p.name}` : p.name;
+    }
+
+    // compact chip for the play-by-play log: name, a tiny fatigue bar, and on-court time — all as they stood at that moment
+    function renderHistChip(p) {
+      const pct = typeof p.energyPct === 'number' ? p.energyPct : 0;
+      const ms = typeof p.onCourtMs === 'number' ? p.onCourtMs : 0;
+      return `
+        <span class="hist-chip">
+          <span class="hist-chip-label">${esc(numberedName(p))}</span>
+          <span class="hist-chip-bar" title="Energy ${pct}%"><span class="hist-chip-bar-fill" style="height:${pct}%; background:${energyColor(pct)};"></span></span>
+          <span class="hist-chip-time">${formatTime(ms)}</span>
+        </span>
+      `;
+    }
+
+    // ---------- Share Link (read-only, no server — the game data lives in the URL itself) ----------
+    function uint8ToBase64Url(bytes) {
+      let binary = '';
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function base64UrlToUint8(b64url) {
+      let b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    // compact array-based tuple (no repeated key names) to keep the link as short as possible
+    function chipTuple(p) {
+      return [p.number || '', p.name, typeof p.energyPct === 'number' ? p.energyPct : 0, typeof p.onCourtMs === 'number' ? p.onCourtMs : 0];
+    }
+
+    function buildShareGamePayload(game) {
+      return {
+        n: game.name,
+        d: game.date,
+        t: game.durationMs,
+        p: game.players.map(p => [p.number || '', p.name, p.category || '', p.outOfRotation ? 1 : 0, p.onCourtMs, p.subCount]),
+        e: game.events.map(ev => {
+          if (ev.type === 'start') return ['s', ev.gameTimeMs, ev.in.map(chipTuple)];
+          if (ev.type === 'rotation') return ['r', ev.gameTimeMs, ev.outOfRotation ? 1 : 0, chipTuple(ev.player)];
+          return ['x', ev.gameTimeMs, ev.in.map(chipTuple), ev.out.map(chipTuple)];
+        }),
+      };
+    }
+
+    async function buildShareLink(game) {
+      const json = JSON.stringify(buildShareGamePayload(game));
+      let bytes = new TextEncoder().encode(json);
+      let flag = 'raw';
+      try {
+        if (window.CompressionStream) {
+          const cs = new CompressionStream('gzip');
+          const writer = cs.writable.getWriter();
+          writer.write(bytes);
+          writer.close();
+          bytes = new Uint8Array(await new Response(cs.readable).arrayBuffer());
+          flag = 'gz';
+        }
+      } catch (err) {
+        // compression unsupported/failed — share the raw (longer) link instead
+      }
+      return `${location.origin}${location.pathname}#share=${flag}.${uint8ToBase64Url(bytes)}`;
+    }
+
+    async function shareGameLink(gameId) {
+      const game = gameHistory.find(g => g.id === gameId);
+      if (!game) return;
+      let url;
+      try {
+        url = await buildShareLink(game);
+      } catch (err) {
+        showToast("Couldn't build the link", 'error');
+        return;
+      }
+      const shareText = `${game.name} — RotationHQ game summary`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: game.name, text: shareText, url });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard', 'success');
+      } catch (err) {
+        window.prompt('Copy this link:', url);
+      }
+    }
+
+    function renderChipFromTuple(t) {
+      const [number, name, energyPct, onCourtMs] = t;
+      const label = number ? `#${number} ${name}` : name;
+      return `
+        <span class="hist-chip">
+          <span class="hist-chip-label">${esc(label)}</span>
+          <span class="hist-chip-bar" title="Energy ${energyPct}%"><span class="hist-chip-bar-fill" style="height:${energyPct}%; background:${energyColor(energyPct)};"></span></span>
+          <span class="hist-chip-time">${formatTime(onCourtMs)}</span>
+        </span>
+      `;
+    }
+
+    async function decodeShareHash(hash) {
+      const dotIdx = hash.indexOf('.');
+      const flag = hash.slice(0, dotIdx);
+      const bytes = base64UrlToUint8(hash.slice(dotIdx + 1));
+      let jsonStr;
+      if (flag === 'gz' && window.DecompressionStream) {
+        const ds = new DecompressionStream('gzip');
+        const writer = ds.writable.getWriter();
+        writer.write(bytes);
+        writer.close();
+        const buf = await new Response(ds.readable).arrayBuffer();
+        jsonStr = new TextDecoder().decode(buf);
+      } else {
+        jsonStr = new TextDecoder().decode(bytes);
+      }
+      return JSON.parse(jsonStr);
+    }
+
+    function renderSharedGame(payload) {
+      $('sharedGameName').textContent = payload.n;
+      const d = new Date(payload.d);
+      $('sharedGameMeta').textContent =
+        `${d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} • ${formatTime(payload.t)} on the clock`;
+
+      const sorted = payload.p.slice().sort((a, b) => b[4] - a[4]);
+      $('sharedGameSummary').innerHTML = sorted.map(row => {
+        const [number, name, cat, outFlag, onCourtMs, subCount] = row;
+        const parts = [];
+        if (cat) parts.push(CAT_LABEL[cat] || cat);
+        if (outFlag) parts.push('out of rotation');
+        const badge = parts.length ? `<span class="cat-badge">${parts.join(' • ')}</span>` : '';
+        return `
+          <div class="card">
+            <div class="jersey-number ${number ? '' : 'empty'}">${number ? esc(number) : '–'}</div>
+            <div class="player-info">
+              <div class="player-name">${esc(name)}</div>
+              ${badge}
+            </div>
+            <div class="sub-counter">
+              <span class="player-time">${formatTime(onCourtMs)}</span>
+              <span class="subs-line">${subCount === 1 ? '1 SUB' : `${subCount} SUBS`}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      $('sharedGameLog').innerHTML = payload.e.map(ev => {
+        const [kind, gameTimeMs] = ev;
+        if (kind === 's') {
+          const chips = ev[2];
+          return `
+            <div class="history-log-entry">
+              <div class="history-log-time">Tip-off</div>
+              <div class="history-log-detail">
+                <div class="hist-chip-group">
+                  <span class="hist-chip-tag history-in">5</span>
+                  <div class="hist-chip-row">${chips.map(renderChipFromTuple).join('')}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (kind === 'r') {
+          const outOfRotation = ev[2];
+          const chip = ev[3];
+          const tagText = outOfRotation ? 'OUT' : 'IN';
+          const tagClass = outOfRotation ? 'history-out' : 'history-in';
+          const label = outOfRotation ? 'Marked out of rotation' : 'Back in rotation';
+          return `
+            <div class="history-log-entry">
+              <div class="history-log-time">${formatTime(gameTimeMs)}</div>
+              <div class="history-log-detail">
+                <div class="hist-chip-group">
+                  <span class="hist-chip-tag ${tagClass}">${tagText}</span>
+                  <div class="hist-chip-row">${renderChipFromTuple(chip)}</div>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin: 3px 0 0 36px;">${label}</div>
+              </div>
+            </div>
+          `;
+        }
+        const inChips = ev[2], outChips = ev[3];
+        return `
+          <div class="history-log-entry">
+            <div class="history-log-time">${formatTime(gameTimeMs)}</div>
+            <div class="history-log-detail">
+              <div class="hist-chip-group">
+                <span class="hist-chip-tag history-in">IN</span>
+                <div class="hist-chip-row">${inChips.map(renderChipFromTuple).join('')}</div>
+              </div>
+              <div class="hist-chip-group">
+                <span class="hist-chip-tag history-out">OUT</span>
+                <div class="hist-chip-row">${outChips.map(renderChipFromTuple).join('')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      $('sharedGameContent').classList.remove('hidden');
+      $('sharedGamePrintBtn').classList.remove('hidden');
+    }
+
+    async function showSharedGameView(hash) {
+      $('setupScreen').classList.add('hidden');
+      $('sharedGameScreen').classList.remove('hidden');
+      const gear = document.getElementById('settingsBtn');
+      if (gear) gear.style.display = 'none';
+      const tagline = document.getElementById('tagline');
+      if (tagline) tagline.textContent = 'A coach shared this game summary with you.';
+      try {
+        const payload = await decodeShareHash(hash);
+        renderSharedGame(payload);
+      } catch (err) {
+        $('sharedGameError').classList.remove('hidden');
+      }
+    }
+
+    function openHistoryScreen(startSelecting) {
+      $('historyDetailView').classList.add('hidden');
+      $('historyListView').classList.remove('hidden');
+      $('setupScreen').classList.add('hidden');
+      $('historyScreen').classList.remove('hidden');
+      if (startSelecting) enterHistorySelectMode();
+      else exitHistorySelectMode(); // also serves as "reset to normal browsing"
+    }
+
+    function closeHistoryScreen() {
+      exitHistorySelectMode();
+      $('historyScreen').classList.add('hidden');
+      $('setupScreen').classList.remove('hidden');
+    }
+
+    function enterHistorySelectMode() {
+      historySelecting = true;
+      selectedHistoryIds = new Set();
+      $('historySelectBtn').textContent = 'Cancel';
+      $('historySelectAllBtn').classList.remove('hidden');
+      $('historyExportBar').classList.remove('hidden');
+      renderHistoryList();
+      updateHistoryExportBar();
+    }
+
+    function exitHistorySelectMode() {
+      historySelecting = false;
+      selectedHistoryIds = new Set();
+      $('historySelectBtn').textContent = 'Select';
+      $('historySelectAllBtn').classList.add('hidden');
+      $('historyExportBar').classList.add('hidden');
+      renderHistoryList();
+    }
+
+    function updateHistoryExportBar() {
+      const n = selectedHistoryIds.size;
+      const btn = $('historyExportConfirmBtn');
+      btn.textContent = `Export (${n})`;
+      btn.disabled = n === 0;
+    }
+
+    function renderHistoryList() {
+      const listEl = $('historyList');
+      const emptyEl = $('historyEmptyState');
+      const selectBtn = $('historySelectBtn');
+
+      if (gameHistory.length === 0) {
+        emptyEl.classList.remove('hidden');
+        selectBtn.classList.add('hidden');
+        listEl.innerHTML = '';
+        return;
+      }
+      emptyEl.classList.add('hidden');
+      selectBtn.classList.remove('hidden');
+
+      listEl.innerHTML = gameHistory.map(g => {
+        const d = new Date(g.date);
+        const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        const isSelected = selectedHistoryIds.has(g.id);
+        const checkbox = historySelecting
+          ? `<div class="active-toggle ${isSelected ? 'checked' : ''}">${checkIcon}</div>`
+          : '';
+        const deleteBtn = historySelecting
+          ? ''
+          : `<button type="button" class="remove-btn" data-action="deleteHistory" data-id="${g.id}">&times;</button>`;
+        return `
+          <div class="card history-card ${isSelected ? 'selected' : ''}" data-id="${g.id}" style="cursor:pointer;">
+            ${checkbox}
+            <div class="player-info">
+              <div class="player-name">${esc(g.name)}</div>
+              <div class="history-meta">${dateStr} • ${formatTime(g.durationMs)} on the clock • ${g.players.length} players</div>
+            </div>
+            ${deleteBtn}
+          </div>
+        `;
+      }).join('');
+
+      listEl.querySelectorAll('.history-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          const id = Number(card.dataset.id);
+          if (historySelecting) {
+            if (selectedHistoryIds.has(id)) selectedHistoryIds.delete(id);
+            else selectedHistoryIds.add(id);
+            renderHistoryList();
+            updateHistoryExportBar();
+            return;
+          }
+          if (e.target.closest('[data-action="deleteHistory"]')) return;
+          openHistoryDetail(id);
+        });
+      });
+      if (!historySelecting) {
+        listEl.querySelectorAll('[data-action="deleteHistory"]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteHistoryGame(Number(btn.dataset.id));
+          });
+        });
+      }
+    }
+
+    function exportSelectedHistory() {
+      const selected = gameHistory.filter(g => selectedHistoryIds.has(g.id));
+      if (selected.length === 0) return;
+      const data = { type: 'benchBossHistory', version: 1, exportedAt: Date.now(), games: selected };
+      const label = selected.length === 1
+        ? selected[0].name.replace(/[^a-z0-9]+/gi, '-').toLowerCase().replace(/^-+|-+$/g, '')
+        : `${selected.length}-games`;
+      shareOrDownloadJSON(data, `rotationhq-history-${label || 'export'}-${dateStamp()}.json`, 'RotationHQ Game History');
+      exitHistorySelectMode();
+    }
+
+    function deleteHistoryGame(id) {
+      const game = gameHistory.find(g => g.id === id);
+      if (!game) return;
+      if (!confirm(`Delete "${game.name}"? This can't be undone.`)) return;
+      gameHistory = gameHistory.filter(g => g.id !== id);
+      saveHistory();
+      closeHistoryDetail();
+      renderHistoryList();
+    }
+
+    function openHistoryDetail(id) {
+      const g = gameHistory.find(g => g.id === id);
+      if (!g) return;
+
+      $('historyDetailName').textContent = g.name;
+      const d = new Date(g.date);
+      $('historyDetailMeta').textContent =
+        `${d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} • ${formatTime(g.durationMs)} on the clock`;
+      $('historyDeleteBtn').dataset.id = g.id;
+      $('historyShareBtn').dataset.id = g.id;
+
+      const sorted = g.players.slice().sort((a, b) => b.onCourtMs - a.onCourtMs);
+      $('historySummaryTable').innerHTML = sorted.map(p => {
+        const parts = [];
+        if (p.category) parts.push(CAT_LABEL[p.category] || p.category);
+        if (p.outOfRotation) parts.push('out of rotation');
+        const badge = parts.length ? `<span class="cat-badge">${parts.join(' • ')}</span>` : '';
+        return `
+        <div class="card">
+          <div class="jersey-number ${p.number ? '' : 'empty'}">${p.number ? esc(p.number) : '–'}</div>
+          <div class="player-info">
+            <div class="player-name">${esc(p.name)}</div>
+            ${badge}
+          </div>
+          <div class="sub-counter">
+            <span class="player-time">${formatTime(p.onCourtMs)}</span>
+            <span class="subs-line">${p.subCount === 1 ? '1 SUB' : `${p.subCount} SUBS`}</span>
+          </div>
+        </div>
+      `;
+      }).join('');
+
+      $('historyLog').innerHTML = g.events.map(ev => {
+        if (ev.type === 'start') {
+          return `
+            <div class="history-log-entry">
+              <div class="history-log-time">Tip-off</div>
+              <div class="history-log-detail">
+                <div class="hist-chip-group">
+                  <span class="hist-chip-tag history-in">5</span>
+                  <div class="hist-chip-row">${ev.in.map(renderHistChip).join('')}</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (ev.type === 'rotation') {
+          const tagText = ev.outOfRotation ? 'OUT' : 'IN';
+          const tagClass = ev.outOfRotation ? 'history-out' : 'history-in';
+          const label = ev.outOfRotation ? 'Marked out of rotation' : 'Back in rotation';
+          return `
+            <div class="history-log-entry">
+              <div class="history-log-time">${formatTime(ev.gameTimeMs)}</div>
+              <div class="history-log-detail">
+                <div class="hist-chip-group">
+                  <span class="hist-chip-tag ${tagClass}">${tagText}</span>
+                  <div class="hist-chip-row">${renderHistChip(ev.player)}</div>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin: 3px 0 0 36px;">${label}</div>
+              </div>
+            </div>
+          `;
+        }
+        return `
+          <div class="history-log-entry">
+            <div class="history-log-time">${formatTime(ev.gameTimeMs)}</div>
+            <div class="history-log-detail">
+              <div class="hist-chip-group">
+                <span class="hist-chip-tag history-in">IN</span>
+                <div class="hist-chip-row">${ev.in.map(renderHistChip).join('')}</div>
+              </div>
+              <div class="hist-chip-group">
+                <span class="hist-chip-tag history-out">OUT</span>
+                <div class="hist-chip-row">${ev.out.map(renderHistChip).join('')}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      $('historyListView').classList.add('hidden');
+      $('historyDetailView').classList.remove('hidden');
+    }
+
+    function closeHistoryDetail() {
+      $('historyDetailView').classList.add('hidden');
+      $('historyListView').classList.remove('hidden');
+    }
+
+    // ---------- Wiring ----------
+    $('addBtn').addEventListener('click', () => {
+      const input = $('nameInput');
+      const numberInput = $('numberInput');
+      const name = input.value.trim();
+      const number = numberInput.value.trim();
+      if (!name) return;
+
+      const activeCount = team.filter(p => p.active).length;
+      const willBeActive = activeCount < 12;
+      const newPlayer = { id: nextId++, name, number, category: $('catSelect').value, active: willBeActive, outOfRotation: false };
+
+      if (willBeActive) {
+        let lastActiveIdx = -1;
+        team.forEach((t, i) => { if (t.active) lastActiveIdx = i; });
+        team.splice(lastActiveIdx + 1, 0, newPlayer);
+      } else {
+        team.push(newPlayer);
+        showToast(`${name} added to your team — sitting out today (12/12 selected)`, 'success');
+      }
+
+      saveTeam();
+      input.value = '';
+      numberInput.value = '';
+      renderSetup();
+      input.focus();
+    });
+
+    $('nameInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('addBtn').click();
+    });
+
+    $('startBtn').addEventListener('click', startGame);
+    $('newGameBtn').addEventListener('click', newGame);
+    $('undoBtn').addEventListener('click', undo);
+    $('subBtn').addEventListener('click', performSubstitution);
+    $('clockToggleBtn').addEventListener('click', toggleClock);
+    $('endGameBtn').addEventListener('click', openEndGameModal);
+    $('endGameCancelBtn').addEventListener('click', closeEndGameModal);
+    $('endGameSaveBtn').addEventListener('click', confirmEndGame);
+    $('endGameNameInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') confirmEndGame();
+    });
+
+    $('historyBtn').addEventListener('click', () => openHistoryScreen(false));
+    $('historyBackBtn').addEventListener('click', closeHistoryScreen);
+    $('historyDetailBackBtn').addEventListener('click', closeHistoryDetail);
+    $('historyDeleteBtn').addEventListener('click', () => {
+      deleteHistoryGame(Number($('historyDeleteBtn').dataset.id));
+    });
+    $('historyShareBtn').addEventListener('click', () => {
+      shareGameLink(Number($('historyShareBtn').dataset.id));
+    });
+    $('historyPrintBtn').addEventListener('click', () => {
+      window.print();
+    });
+    $('sharedGamePrintBtn').addEventListener('click', () => {
+      window.print();
+    });
+    $('historySelectBtn').addEventListener('click', () => {
+      if (historySelecting) exitHistorySelectMode();
+      else enterHistorySelectMode();
+    });
+    $('historySelectAllBtn').addEventListener('click', () => {
+      if (selectedHistoryIds.size === gameHistory.length) {
+        selectedHistoryIds = new Set();
+      } else {
+        selectedHistoryIds = new Set(gameHistory.map(g => g.id));
+      }
+      renderHistoryList();
+      updateHistoryExportBar();
+    });
+    $('historyExportConfirmBtn').addEventListener('click', exportSelectedHistory);
+
+    $('menuBackdrop').addEventListener('click', () => {
+      closePlayerMenu();
+      closeSettings();
+      closeEndGameModal();
+    });
+    $('menuCancel').addEventListener('click', closePlayerMenu);
+
+    // ---------- Settings panel ----------
+    function openSettings() {
+      applySettingsToUI();
+      $('settingsPanel').classList.add('show');
+      $('menuBackdrop').classList.add('show');
+    }
+    function closeSettings() {
+      $('settingsPanel').classList.remove('show');
+      $('menuBackdrop').classList.remove('show');
+    }
+
+    $('settingsBtn').addEventListener('click', openSettings);
+    $('infoBtn').addEventListener('click', () => $('helpScreen').classList.add('show'));
+    $('helpCloseBtn').addEventListener('click', () => $('helpScreen').classList.remove('show'));
+    $('settingsClose').addEventListener('click', closeSettings);
+
+    $('settingFatigueEnabled').addEventListener('change', () => {
+      settings.fatigueEnabled = $('settingFatigueEnabled').checked;
+      saveSettings();
+      applySettingsToUI();
+      updateTimeDisplays();
+      if (document.getElementById('gameScreen') && !document.getElementById('gameScreen').classList.contains('hidden')) {
+        renderGame();
+      }
+    });
+
+    $('settingFatigueMinutes').addEventListener('change', () => {
+      const val = parseInt($('settingFatigueMinutes').value, 10);
+      if (!isNaN(val) && val >= 1 && val <= 30) {
+        settings.fatigueMinutes = val;
+        saveSettings();
+      } else {
+        $('settingFatigueMinutes').value = settings.fatigueMinutes;
+      }
+    });
+
+    // ---------- Export / Import (roster + game history) ----------
+    function dateStamp(d = new Date()) {
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+
+    // tries the native share sheet first (so WhatsApp, Messages, email, etc. all show up
+    // as options on a phone); falls back to a plain file download if sharing isn't available
+    async function shareOrDownloadJSON(data, filename, shareTitle) {
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+
+      try {
+        const file = new File([blob], filename, { type: 'application/json' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: shareTitle });
+          return;
+        }
+      } catch (err) {
+        if (err && err.name === 'AbortError') return; // user cancelled the share sheet
+        // otherwise fall through to download
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('File downloaded', 'success');
+    }
+
+    function exportTeam() {
+      if (team.length === 0) {
+        showToast('No players to export yet', 'error');
+        return;
+      }
+      const data = { type: 'benchBossTeam', version: 1, exportedAt: Date.now(), team };
+      shareOrDownloadJSON(data, `rotationhq-roster-${dateStamp()}.json`, 'RotationHQ Roster');
+    }
+
+    function importTeamFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const incoming = Array.isArray(parsed) ? parsed : parsed.team;
+          if (!Array.isArray(incoming)) throw new Error('bad format');
+
+          const cleaned = incoming
+            .filter(p => p && typeof p.name === 'string')
+            .map((p, idx) => ({
+              id: typeof p.id === 'number' ? p.id : Date.now() + idx,
+              name: p.name,
+              number: typeof p.number === 'string' ? p.number : '',
+              category: normalizeCategory(p.category),
+              active: !!p.active,
+              outOfRotation: !!p.outOfRotation,
+            }));
+          if (cleaned.length === 0) throw new Error('empty');
+
+          const msg = `Import ${cleaned.length} player${cleaned.length === 1 ? '' : 's'}? This replaces your current team list.`;
+          if (!confirm(msg)) return;
+
+          team = cleaned;
+          nextId = team.reduce((max, p) => Math.max(max, p.id), 0) + 1;
+          saveTeam();
+          renderSetup();
+          showToast('Roster imported', 'success');
+        } catch (err) {
+          showToast("Couldn't read that file", 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function importHistoryFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const incoming = Array.isArray(parsed) ? parsed : parsed.games;
+          if (!Array.isArray(incoming)) throw new Error('bad format');
+
+          const valid = incoming.filter(g =>
+            g && typeof g.id !== 'undefined' && typeof g.name === 'string' &&
+            Array.isArray(g.players) && Array.isArray(g.events)
+          );
+          if (valid.length === 0) throw new Error('empty');
+
+          const existingIds = new Set(gameHistory.map(g => g.id));
+          const newOnes = valid.filter(g => !existingIds.has(g.id));
+          const skipped = valid.length - newOnes.length;
+
+          if (newOnes.length === 0) {
+            showToast(skipped > 0 ? 'Those games are already saved' : 'No valid games found', 'error');
+            return;
+          }
+
+          const msg = `Import ${newOnes.length} game${newOnes.length === 1 ? '' : 's'}?`
+            + (skipped > 0 ? ` (${skipped} already saved, skipped)` : '');
+          if (!confirm(msg)) return;
+
+          gameHistory = [...newOnes, ...gameHistory].sort((a, b) => b.date - a.date);
+          if (gameHistory.length > MAX_SAVED_GAMES) gameHistory.length = MAX_SAVED_GAMES;
+          saveHistory();
+          showToast('Game history imported', 'success');
+        } catch (err) {
+          showToast("Couldn't read that file", 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    $('exportTeamBtn').addEventListener('click', exportTeam);
+    $('importTeamBtn').addEventListener('click', () => $('importTeamFile').click());
+    $('importTeamFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) importTeamFromFile(file);
+      e.target.value = '';
+    });
+
+    $('exportHistoryBtn').addEventListener('click', () => {
+      if (gameHistory.length === 0) {
+        showToast('No saved games to export', 'error');
+        return;
+      }
+      closeSettings();
+      openHistoryScreen(true);
+    });
+    $('importHistoryBtn').addEventListener('click', () => $('importHistoryFile').click());
+    $('importHistoryFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) importHistoryFromFile(file);
+      e.target.value = '';
+    });
+
+    $('menuToggleRotation').addEventListener('click', () => {
+      const p = getMenuPlayer();
+      if (!p) return closePlayerMenu();
+      p.outOfRotation = !p.outOfRotation;
+      if (menuContext === 'team') {
+        saveTeam();
+        renderSetup();
+      } else {
+        if (p.outOfRotation) {
+          selectedBench.delete(p.id);
+          pendingOverride = false;
+        }
+        subLog.push({
+          type: 'rotation',
+          gameTimeMs: getGameElapsedMs(),
+          outOfRotation: p.outOfRotation,
+          player: snapshotPlayer(p.id),
+        });
+        renderGame();
+      }
+      closePlayerMenu();
+    });
+
+    $('menuEditPlayer').addEventListener('click', () => {
+      const p = getMenuPlayer();
+      if (!p) return closePlayerMenu();
+      openPlayerEditForm(p);
+    });
+
+    $('menuEditCancel').addEventListener('click', closePlayerMenu);
+
+    $('menuEditSave').addEventListener('click', () => {
+      const p = getMenuPlayer();
+      if (!p) return closePlayerMenu();
+      const name = $('menuEditName').value.trim();
+      const number = $('menuEditNumber').value.trim();
+      const category = $('menuEditCategory').value;
+      if (!name) {
+        showToast('Name cannot be empty', 'error');
+        return;
+      }
+      p.name = name;
+      p.number = number;
+      p.category = category;
+      if (menuContext === 'team') {
+        saveTeam();
+        renderSetup();
+      } else {
+        renderGame();
+      }
+      closePlayerMenu();
+    });
+
+    $('menuEditName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('menuEditSave').click();
+    });
+
+    $('addPlayerToggleBtn').addEventListener('click', () => {
+      $('gameAddPlayer').classList.toggle('hidden');
+      if (!$('gameAddPlayer').classList.contains('hidden')) {
+        $('gameNameInput').focus();
+      }
+    });
+
+    $('gameAddCancelBtn').addEventListener('click', () => {
+      $('gameAddPlayer').classList.add('hidden');
+      $('gameNameInput').value = '';
+      $('gameNumberInput').value = '';
+    });
+
+    $('gameAddBtn').addEventListener('click', () => {
+      const input = $('gameNameInput');
+      const numberInput = $('gameNumberInput');
+      const name = input.value.trim();
+      const number = numberInput.value.trim();
+      if (!name) return;
+      pushHistory();
+      const newPlayer = { id: nextId++, name, number, category: $('gameCatSelect').value, outOfRotation: false, subCount: 1, onCourtMs: 0, stintStart: null, energyMs: 0, energyAnchorTime: Date.now(), energyCharging: false };
+      players.push(newPlayer);
+      bench.push(newPlayer.id);
+      input.value = '';
+      numberInput.value = '';
+      $('gameAddPlayer').classList.add('hidden');
+      showToast(`${name} added to the bench`, 'success');
+      renderGame();
+    });
+
+    $('gameNameInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') $('gameAddBtn').click();
+    });
+
+    // ---------- Init ----------
+    const shareMatch = location.hash.match(/^#share=(.+)$/);
+    if (shareMatch) {
+      // someone opened a shared game link — show the read-only summary only,
+      // skip loading/rendering the normal coach app entirely
+      showSharedGameView(shareMatch[1]);
+    } else {
+      loadSettings();
+      loadTeam();
+      loadHistory();
+      renderSetup();
+
+      // keep the game clock and on-court timers display ticking while visible,
+      // and snap them to the correct value the instant the screen wakes up
+      setInterval(updateTimeDisplays, 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) updateTimeDisplays();
+      });
+    }
+  </script>
+</body>
+</html>
